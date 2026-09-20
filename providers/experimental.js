@@ -62,7 +62,7 @@ function getInvertedSortTag(score, maxScore) {
     var val = Math.max(0, parseInt(score, 10) || 0);
     var inv = Math.max(0, maxScore - val);
     var bin = inv.toString(2);
-    while (bin.length < 20) bin = "0" + bin;
+    while (bin.length < 48) bin = "0" + bin; // fixed width — ties never happen, order is total
     var chars = [];
     for (var i = 0; i < bin.length; i++) {
         chars.push(bin.charAt(i) === "1" ? "\uFEFF" : "\u200B");
@@ -299,6 +299,14 @@ function finalizeStreams(streams, settings) {
         filtered.push({ stream: s, url: url, quality: q, sizeBytes: sizeBytes });
     }
 
+    // composite sort score baked into Nuvio's sort tag — bigger = higher.
+    // 4K band sits above 1080p band; inside each band, larger file wins.
+    var SIZE_CAP = 1e12;
+    for (var j = 0; j < filtered.length; j++) {
+        var e = filtered[j];
+        e.score = (e.quality === "4K" ? SIZE_CAP : 0) + Math.min(e.sizeBytes || 0, SIZE_CAP - 1);
+    }
+
     filtered.sort(function(a, b) {
         if (a.quality !== b.quality) return a.quality === "4K" ? -1 : 1;
         return (b.sizeBytes || 0) - (a.sizeBytes || 0);
@@ -343,8 +351,7 @@ function makeStream(entry, rank) {
     var streamTitle = [line1, line2, line3, line4, line5, line6, line7].filter(Boolean).join("\n");
     if (!streamTitle) streamTitle = "Experimental";
 
-    var score = q === "4K" ? 2 : 1;
-    var sortTag = getInvertedSortTag(score, 10);
+    var sortTag = getInvertedSortTag(entry.score || 0, 2e12);
 
     return {
         name: sortTag + mainTitle,
