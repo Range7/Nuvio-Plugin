@@ -83,7 +83,7 @@
     {
       "id": "experimental",
       "name": "Experimental",
-      "description": "Experimental via PenguPlay (pengu.uk) — STRICT 4K & 1080p ONLY, min 750MB. Rich server info",
+      "description": "Experimental via PenguPlay (pengu.uk) — STRICT 4K & 1080p ONLY, min 1GB. Rich server info",
       "version": "1.0.1",
       "author": "He",
       "supportedTypes": ["movie", "tv"],
