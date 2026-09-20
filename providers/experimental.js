@@ -3,7 +3,7 @@
  * PenguPlay (pengu.uk) Stremio addon — Experimental source only
  * STRICT 4K & 1080p ONLY — Min 1GB — Rich server info
  * Order: 4K first, then 1080p. Each quality: largest → smallest.
- * Visible numbering 01, 02, 03... with original server name.
+ * Visible numbering 01, 02, 03... with fixed "Experimental" label.
  */
 
 // ── Protected strings (Base64, split into chunks) ────────────────────────────
@@ -309,20 +309,15 @@ function makeStream(entry, rank) {
     var q = entry.quality;
     var qUp = q.toUpperCase();
 
-    var label = stripEmoji(s.name);
-    if (!label) label = qUp;
-
     var serverInfo = parseServerInfo(s.description);
     var size = formatBytes(entry.sizeBytes) || serverInfo.size || "";
 
     var host = pickHost(entry.url);
     var typeTag = /\.m3u8(\?|$)/i.test(entry.url) ? "HLS" : (/\.mkv(\?|$)/i.test(entry.url) ? "MKV" : "MP4");
 
-    // اسم ظاهر: رقم + اسم السيرفر الأصلي + جودة + حجم
+    // اسم ظاهر: رقم + Experimental ثابت + جودة + حجم
     var numStr = pad2((rank || 0) + 1);
-    var nameParts = [numStr];
-    if (label) nameParts.push(label);
-    else nameParts.push("Experimental");
+    var nameParts = [numStr, "Experimental"];
     if (q === "4K") nameParts.push("4K");
     else if (q === "1080p") nameParts.push("1080p");
     if (size) nameParts.push(size);
