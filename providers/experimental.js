@@ -202,16 +202,16 @@ function parseServerInfo(description) {
     var d = String(description || "");
     var info = {};
 
-    // 🎬 العنوان مع السنة
-    var mTitle = d.match(/🎬\s*([^\n🎧📼]+)/);
+    // 🎬 العنوان — يقف عند 🎧 S## / 📼 / 🎥 / سطر جديد
+    var mTitle = d.match(/🎬\s*(.+?)(?=\s*🎧\s*S\d|\s*📼|\s*🎥|\n|$)/);
     if (mTitle) info.titleLine = mTitle[1].trim();
 
-    // 🎧 الموسم (S01)
-    var mSeason = d.match(/🎧\s*([^\n📼]+)/);
+    // 🎧 الموسم — فقط إذا تلاه S##
+    var mSeason = d.match(/🎧\s*(S\d+)\b/);
     if (mSeason) info.season = mSeason[1].trim();
 
-    // 📼 الحلقة (E02)
-    var mEpisode = d.match(/📼\s*([^\n🎥]+)/);
+    // 📼 الحلقة — فقط إذا تلاه E##
+    var mEpisode = d.match(/📼\s*(E\d+)\b/);
     if (mEpisode) info.episode = mEpisode[1].trim();
 
     // 🎥 المصدر (WEB-DL, WEBRip, BluRay…)
@@ -226,9 +226,15 @@ function parseServerInfo(description) {
     var mRate = d.match(/📊\s*([\d.]+\s*Mbps)/i);
     if (mRate) info.bitrate = mRate[1];
 
-    // 🏷️ المجموعة / المنصة (Netflix, Disney+…)
-    var mGroup = d.match(/🏷️\s*([^\n💻🔍]+)/);
-    if (mGroup) info.group = mGroup[1].trim();
+    // 🏷️ المجموعة / المنصة — يقبل أكثر من واحد
+    var groups = [];
+    var groupRe = /🏷️\s*([^\n🏷️💻🔍]+)/g;
+    var gm;
+    while ((gm = groupRe.exec(d)) !== null) {
+        var g = gm[1].trim();
+        if (g) groups.push(g);
+    }
+    if (groups.length) info.group = groups.join("  •  ");
 
     // 💻 الويب
     var mWeb = d.match(/💻\s*([^\n🔍]+)/);
@@ -238,9 +244,19 @@ function parseServerInfo(description) {
     var mTest = d.match(/🔍\s*([^\n]+)/);
     if (mTest) info.testSource = mTest[1].trim();
 
-    // 🔊 الصوت (AAC, DDP 5.1, 7.0…)
-    var mAudio = d.match(/🔊\s*([^\n]+)/);
+    // 🔊 الصوت — يلتقط Atmos | DD+ ومعه بقية السطر
+    var mAudio = d.match(/🎧\s*((?:Atmos|DD\+|DDP|AAC|TrueHD|DTS)[^\n]+?)(?=\s*🔊|\s*📦|\n|$)/i);
     if (mAudio) info.audio = mAudio[1].trim();
+
+    // إذا ما فيه Atmos/DDP بالوصف، خذ من 🔊
+    if (!info.audio) {
+        var mAudioLine = d.match(/🔊\s*([^\n]+)/);
+        if (mAudioLine) info.audio = mAudioLine[1].trim();
+    }
+
+    // 🔊 القنوات (5.1, 7.1, 2.0)
+    var mChan = d.match(/🔊\s*(\d+\.\d+)\b/);
+    if (mChan) info.channels = mChan[1];
 
     return info;
 }
@@ -323,7 +339,7 @@ function makeStream(entry, rank) {
     var visibleName = nameParts.join(" • ");
 
     // ── السطر التفصيلي: 6 أسطر تغطي كل الحقول ──
-    // سطر 1: العنوان (سنة) + S## + E##
+    // سطر 1: 🎬 العنوان  🎧 S##  📼 E##
     var l1 = "";
     if (serverInfo.titleLine) {
         l1 = "🎬 " + serverInfo.titleLine;
@@ -331,28 +347,29 @@ function makeStream(entry, rank) {
         if (serverInfo.episode) l1 += "  📼 " + serverInfo.episode;
     }
 
-    // سطر 2: المصدر + البِت ريت
+    // سطر 2: 🎥 المصدر  •  📊 البِت ريت
     var l2parts = [];
     if (serverInfo.source) l2parts.push("🎥 " + serverInfo.source);
     if (serverInfo.bitrate) l2parts.push("📊 " + serverInfo.bitrate);
     var l2 = l2parts.join("  •  ");
 
-    // سطر 3: الصوت + الحجم
+    // سطر 3: 🔊 الصوت  •  📦 الحجم
     var l3parts = [];
     if (serverInfo.audio) l3parts.push("🔊 " + serverInfo.audio);
+    if (serverInfo.channels) l3parts.push(serverInfo.channels);
     if (serverInfo.size) l3parts.push("📦 " + serverInfo.size);
     var l3 = l3parts.join("  •  ");
 
-    // سطر 4: المنصة
+    // سطر 4: 🏷️ المجموعة
     var l4 = serverInfo.group ? "🏷️ " + serverInfo.group : "";
 
-    // سطر 5: الويب + مصدر الفحص
+    // سطر 5: 💻 الويب  •  🔍 مصدر الفحص
     var l5parts = [];
     if (serverInfo.web) l5parts.push("💻 " + serverInfo.web);
     if (serverInfo.testSource) l5parts.push("🔍 " + serverInfo.testSource);
     var l5 = l5parts.join("  •  ");
 
-    // سطر 6: نوع الملف + المضيف
+    // سطر 6: نوع الملف • المضيف
     var l6 = [typeTag, host].filter(Boolean).join(" • ");
 
     var streamTitle = [l1, l2, l3, l4, l5, l6].filter(Boolean).join("\n");
