@@ -81,6 +81,19 @@
       "contentLanguage": ["en", "ar"]
     },
     {
+      "id": "experimental",
+      "name": "Experimental",
+      "description": "Experimental via PenguPlay (pengu.uk) — STRICT 4K & 1080p ONLY, min 750MB. Rich server info",
+      "version": "1.0.0",
+      "author": "He",
+      "supportedTypes": ["movie", "tv"],
+      "filename": "providers/experimental.js",
+      "enabled": true,
+      "formats": ["mp4", "mkv"],
+      "logo": "https://www.google.com/s2/favicons?domain=pengu.uk&sz=128",
+      "contentLanguage": ["en", "ar"]
+    },
+    {
       "id": "nuvio-cee",
       "name": "Cee",
       "description": "Cee - Arabic movies & series with multi-quality streams",
