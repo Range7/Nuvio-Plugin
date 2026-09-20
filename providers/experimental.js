@@ -1,7 +1,9 @@
 /**
  * Experimental Nuvio Provider
  * PenguPlay (pengu.uk) Stremio addon — Experimental source only
- * STRICT 4K & 1080p ONLY — Min 1GB — Rich server info like 2Peckle
+ * STRICT 4K & 1080p ONLY — Min 1GB — Rich server info
+ * Order: 4K first, then 1080p. Each quality: largest → smallest.
+ * Visible numbering 01, 02, 03...
  */
 
 // ── Protected strings (Base64, split into chunks) ────────────────────────────
@@ -57,17 +59,8 @@ function getTmdbKey() {
     return b64decode(pool[Math.floor(Math.random() * pool.length)]);
 }
 
-function getInvertedSortTag(score, maxScore) {
-    maxScore = maxScore || 999999;
-    var val = Math.max(0, parseInt(score, 10) || 0);
-    var inv = Math.max(0, maxScore - val);
-    var bin = inv.toString(2);
-    while (bin.length < 48) bin = "0" + bin; // fixed width — ties never happen, order is total
-    var chars = [];
-    for (var i = 0; i < bin.length; i++) {
-        chars.push(bin.charAt(i) === "1" ? "\uFEFF" : "\u200B");
-    }
-    return chars.join("");
+function pad2(n) {
+    return n < 10 ? "0" + n : "" + n;
 }
 
 function onSettings() {
@@ -154,7 +147,7 @@ function resolvePengu(id, type, season, episode) {
     var url = ADDON_BASE + "/" + ADDON_CONFIG + "/stream/" +
         (type === "tv" ? "series/" + id + ":" + season + ":" + episode : "movie/" + id) + ".json";
 
-    console.log("[experimental] addon: " + url.replace(b64decode(_0xC1 + _0xC2 + _0xC3 + _0xC4 + _0xC5 + _0xC6).replace("%7B%22auth_token%22%3A%22", "").split("%22")[0], "***"));
+    console.log("[experimental] addon fetch");
 
     return fetch(url, {
         headers: {
@@ -215,7 +208,6 @@ function parseServerInfo(description) {
     var mCodec = d.match(/🎞️\s*([^\n🎧🔊]+)/);
     if (mCodec) info.codec = mCodec[1].trim();
 
-    // audio: prefer 🎧 ... 🔊; fall back to old 🔊/🎧 single-tag style
     var mAudio = d.match(/🎧\s*([^🔊\n]+)/);
     if (mAudio) info.audio = mAudio[1].trim();
     if (!info.audio) {
@@ -226,7 +218,6 @@ function parseServerInfo(description) {
     var mChan = d.match(/🔊\s*([^🗣\n]+)/);
     if (mChan) info.channels = mChan[1].trim();
 
-    // languages + subtitle languages on the 🗣️ line: "🗣️ 🇬🇧📝 🇬🇧"
     var mLangLine = d.match(/🗣️\s*([^\n]+)/);
     if (mLangLine) {
         var parts = mLangLine[1].split(/📝/);
@@ -276,7 +267,7 @@ function finalizeStreams(streams, settings) {
         if (settings.qualityMode === "4k" && q !== "4K") continue;
         if (settings.qualityMode === "1080p" && q !== "1080p") continue;
 
-        // 750MB floor — under this gets dropped
+        // حجم الملف
         var sizeBytes = parseInt(bh.videoSize, 10) || 0;
         if (!sizeBytes) {
             var srv = parseServerInfo(s.description);
@@ -299,14 +290,7 @@ function finalizeStreams(streams, settings) {
         filtered.push({ stream: s, url: url, quality: q, sizeBytes: sizeBytes });
     }
 
-    // composite sort score baked into Nuvio's sort tag — bigger = higher.
-    // 4K band sits above 1080p band; inside each band, larger file wins.
-    var SIZE_CAP = 1e12;
-    for (var j = 0; j < filtered.length; j++) {
-        var e = filtered[j];
-        e.score = (e.quality === "4K" ? SIZE_CAP : 0) + Math.min(e.sizeBytes || 0, SIZE_CAP - 1);
-    }
-
+    // ترتيب: 4K أولاً، ثم 1080p. داخل كل جودة: من الأكبر حجماً للأصغر.
     filtered.sort(function(a, b) {
         if (a.quality !== b.quality) return a.quality === "4K" ? -1 : 1;
         return (b.sizeBytes || 0) - (a.sizeBytes || 0);
@@ -314,6 +298,7 @@ function finalizeStreams(streams, settings) {
 
     console.log("[experimental] final streams (STRICT " + settings.qualityMode + ", min 1GB): " + filtered.length);
 
+    // ترقيم متتالي 01، 02، 03... على القائمة كلها
     return filtered.map(function(entry, idx) {
         return makeStream(entry, idx);
     });
@@ -326,7 +311,6 @@ function makeStream(entry, rank) {
 
     var label = stripEmoji(s.name);
     if (!label) label = qUp;
-    if (q === "1080p" && !/1080/i.test(label)) label = "1080p " + label;
 
     var serverInfo = parseServerInfo(s.description);
     var size = formatBytes(entry.sizeBytes) || serverInfo.size || "";
@@ -334,9 +318,15 @@ function makeStream(entry, rank) {
     var host = pickHost(entry.url);
     var typeTag = /\.m3u8(\?|$)/i.test(entry.url) ? "HLS" : (/\.mkv(\?|$)/i.test(entry.url) ? "MKV" : "MP4");
 
-    var mainTitle = ["Experimental", label].filter(Boolean).join(" • ");
-    if (size) mainTitle += " • " + size;
+    // اسم ظاهر: رقم + اسم + جودة + حجم
+    var numStr = pad2((rank || 0) + 1);
+    var nameParts = [numStr, "Experimental"];
+    if (q === "4K") nameParts.push("4K");
+    else if (q === "1080p") nameParts.push("1080p");
+    if (size) nameParts.push(size);
+    var visibleName = nameParts.join(" • ");
 
+    // السطر التفصيلي تحت
     var langLine = [];
     if (serverInfo.lang) langLine.push("🗣️ " + serverInfo.lang);
     if (serverInfo.subs) langLine.push("📝 " + serverInfo.subs);
@@ -349,13 +339,11 @@ function makeStream(entry, rank) {
     var line6 = [serverInfo.web, serverInfo.testSource].filter(Boolean).join(" • ");
     var line7 = [typeTag, host].filter(Boolean).join(" • ");
     var streamTitle = [line1, line2, line3, line4, line5, line6, line7].filter(Boolean).join("\n");
-    if (!streamTitle) streamTitle = "Experimental";
-
-    var sortTag = getInvertedSortTag(entry.score || 0, 2e12);
+    if (!streamTitle) streamTitle = visibleName;
 
     return {
-        name: sortTag + mainTitle,
-        title: mainTitle,
+        name: visibleName,
+        title: visibleName,
         size: streamTitle,
         url: entry.url,
         quality: qUp,
