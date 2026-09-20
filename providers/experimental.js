@@ -202,19 +202,19 @@ function parseServerInfo(description) {
     var d = String(description || "");
     var info = {};
 
-    // 🎬 العنوان — يقف عند 🎧 S## / 📼 / 🎥 / سطر جديد
+    // 🎬 العنوان
     var mTitle = d.match(/🎬\s*(.+?)(?=\s*🎧\s*S\d|\s*📼|\s*🎥|\n|$)/);
     if (mTitle) info.titleLine = mTitle[1].trim();
 
-    // 🎧 الموسم — فقط إذا تلاه S##
+    // 🎧 الموسم
     var mSeason = d.match(/🎧\s*(S\d+)\b/);
     if (mSeason) info.season = mSeason[1].trim();
 
-    // 📼 الحلقة — فقط إذا تلاه E##
+    // 📼 الحلقة
     var mEpisode = d.match(/📼\s*(E\d+)\b/);
     if (mEpisode) info.episode = mEpisode[1].trim();
 
-    // 🎥 المصدر (WEB-DL, WEBRip, BluRay…)
+    // 🎥 المصدر
     var mSource = d.match(/🎥\s*([^\n]+)/);
     if (mSource) info.source = mSource[1].trim();
 
@@ -226,7 +226,7 @@ function parseServerInfo(description) {
     var mRate = d.match(/📊\s*([\d.]+\s*Mbps)/i);
     if (mRate) info.bitrate = mRate[1];
 
-    // ── 🏷️ + 🎭 + 🍿 المجموعة / المنصة — مع الحفاظ على الإيموجي الأصلي ──
+    // 🏷️ / 🎭 / 🍿 المجموعة
     var groups = [];
     var groupRe = /(🏷️|🎭|🍿)\s*([^\n🏷️🎭🍿💻🔍]+)/g;
     var gm;
@@ -247,23 +247,26 @@ function parseServerInfo(description) {
     var mTest = d.match(/🔍\s*([^\n]+)/);
     if (mTest) info.testSource = mTest[1].trim();
 
-    // 🔊 / 🎧 الصوت — مع حفظ الإيموجي الأصلي
+    // 🌐 اللغات / الدبلجة — أي شيء بعد الـ globe حتى 📦 أو نهاية السطر
+    var mLang = d.match(/🌐\s*([^\n📦]+)/);
+    if (mLang) {
+        var langText = mLang[1].replace(/\s+/g, " ").trim();
+        if (langText) info.lang = langText;
+    }
+
+    // 🔊 / 🎧 الصوت
     var mAudio = d.match(/(🎧|🔊)\s*((?:Atmos|DD\+|DDP|AAC|TrueHD|DTS|EAC3|AC3)[^\n]*?)(?=\s*🎧|\s*🔊|\s*📦|\s*🌐|\n|$)/i);
     if (mAudio) {
         info.audioEmoji = mAudio[1];
         info.audio = mAudio[2].trim();
     }
 
-    // 🔊 / 🎧 القنوات (5.1, 7.1, 2.0, 7.0) — مع حفظ الإيموجي الأصلي
+    // 🔊 / 🎧 القنوات
     var mChan = d.match(/(🎧|🔊)\s*(\d+\.\d+)\b/);
     if (mChan) {
         info.channelsEmoji = mChan[1];
         info.channels = mChan[2];
     }
-
-    // 🌐 اللغات / الدبلجة
-    var mLang = d.match(/🌐\s*([^\n📦🏷️🎭💻🔍]+)/);
-    if (mLang) info.lang = mLang[1].trim();
 
     return info;
 }
@@ -292,7 +295,6 @@ function finalizeStreams(streams, settings) {
         if (settings.qualityMode === "4k" && q !== "4K") continue;
         if (settings.qualityMode === "1080p" && q !== "1080p") continue;
 
-        // الحجم
         var sizeBytes = parseInt(bh.videoSize, 10) || 0;
         if (!sizeBytes) {
             var srv = parseServerInfo(s.description);
@@ -315,7 +317,6 @@ function finalizeStreams(streams, settings) {
         filtered.push({ stream: s, url: url, quality: q, sizeBytes: sizeBytes });
     }
 
-    // ترتيب: 4K أولاً، ثم 1080p. داخل كل جودة: من الأكبر حجماً للأصغر.
     filtered.sort(function(a, b) {
         if (a.quality !== b.quality) return a.quality === "4K" ? -1 : 1;
         return (b.sizeBytes || 0) - (a.sizeBytes || 0);
@@ -339,7 +340,6 @@ function makeStream(entry, rank) {
     var host = pickHost(entry.url);
     var typeTag = /\.m3u8(\?|$)/i.test(entry.url) ? "HLS" : (/\.mkv(\?|$)/i.test(entry.url) ? "MKV" : "MP4");
 
-    // اسم ظاهر: رقم • Experimental • جودة • حجم
     var numStr = pad2((rank || 0) + 1);
     var nameParts = [numStr, "Experimental"];
     if (q === "4K") nameParts.push("4K");
@@ -347,8 +347,7 @@ function makeStream(entry, rank) {
     if (size) nameParts.push(size);
     var visibleName = nameParts.join(" • ");
 
-    // ── السطر التفصيلي ──
-    // سطر 1: 🎬 العنوان  🎧 S##  📼 E##
+    // سطر 1
     var l1 = "";
     if (serverInfo.titleLine) {
         l1 = "🎬 " + serverInfo.titleLine;
@@ -356,13 +355,13 @@ function makeStream(entry, rank) {
         if (serverInfo.episode) l1 += "  📼 " + serverInfo.episode;
     }
 
-    // سطر 2: 🎥 المصدر  •  📊 البِت ريت
+    // سطر 2
     var l2parts = [];
     if (serverInfo.source) l2parts.push("🎥 " + serverInfo.source);
     if (serverInfo.bitrate) l2parts.push("📊 " + serverInfo.bitrate);
     var l2 = l2parts.join("  •  ");
 
-    // سطر 3: 🔊/🎧 الصوت  •  🔊/🎧 القنوات  •  🌐 اللغات  •  📦 الحجم
+    // سطر 3
     var l3parts = [];
     if (serverInfo.audio) l3parts.push((serverInfo.audioEmoji || "🔊") + " " + serverInfo.audio);
     if (serverInfo.channels) l3parts.push((serverInfo.channelsEmoji || "🔊") + " " + serverInfo.channels);
@@ -370,16 +369,16 @@ function makeStream(entry, rank) {
     if (serverInfo.size) l3parts.push("📦 " + serverInfo.size);
     var l3 = l3parts.join("  •  ");
 
-    // سطر 4: 🏷️/🎭 المجموعة — مع الحفاظ على إيموجي كل واحدة
+    // سطر 4
     var l4 = serverInfo.group ? serverInfo.group : "";
 
-    // سطر 5: 💻 الويب  •  🔍 مصدر الفحص
+    // سطر 5
     var l5parts = [];
     if (serverInfo.web) l5parts.push("💻 " + serverInfo.web);
     if (serverInfo.testSource) l5parts.push("🔍 " + serverInfo.testSource);
     var l5 = l5parts.join("  •  ");
 
-    // سطر 6: نوع الملف • المضيف
+    // سطر 6
     var l6 = [typeTag, host].filter(Boolean).join(" • ");
 
     var streamTitle = [l1, l2, l3, l4, l5, l6].filter(Boolean).join("\n");
