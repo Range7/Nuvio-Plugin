@@ -214,7 +214,7 @@ function parseServerInfo(description) {
     var mEpisode = d.match(/📼\s*(E\d+)\b/);
     if (mEpisode) info.episode = mEpisode[1].trim();
 
-    // 🎥 المصدر (WEB-DL, WEBRip, BluRay…)
+    // 🎥 المصدر
     var mSource = d.match(/🎥\s*([^\n]+)/);
     if (mSource) info.source = mSource[1].trim();
 
@@ -226,15 +226,19 @@ function parseServerInfo(description) {
     var mRate = d.match(/📊\s*([\d.]+\s*Mbps)/i);
     if (mRate) info.bitrate = mRate[1];
 
-    // 🏷️ المجموعة / المنصة — يقبل أكثر من واحد
+    // ── 🏷️ + 🎭 + 🍿 المجموعة / المنصة — مع الحفاظ على الإيموجي الأصلي ──
     var groups = [];
-    var groupRe = /🏷️\s*([^\n🏷️💻🔍]+)/g;
+    var groupRe = /(🏷️|🎭|🍿)\s*([^\n🏷️🎭🍿💻🔍]+)/g;
     var gm;
     while ((gm = groupRe.exec(d)) !== null) {
-        var g = gm[1].trim();
-        if (g) groups.push(g);
+        var emoji = gm[1];
+        var text = gm[2].replace(/[\p{Extended_Pictographic}\uFE0F\u20E3]/gu, "").trim();
+        if (text) groups.push({ emoji: emoji, text: text });
     }
-    if (groups.length) info.group = groups.join("  •  ");
+    if (groups.length) {
+        info.groups = groups; // مصفوفة كائنات {emoji, text}
+        info.group = groups.map(function(g) { return g.emoji + " " + g.text; }).join("  •  ");
+    }
 
     // 💻 الويب
     var mWeb = d.match(/💻\s*([^\n🔍]+)/);
@@ -244,18 +248,13 @@ function parseServerInfo(description) {
     var mTest = d.match(/🔍\s*([^\n]+)/);
     if (mTest) info.testSource = mTest[1].trim();
 
-    // 🔊 الصوت — يلتقط Atmos | DD+ ومعه بقية السطر
-    var mAudio = d.match(/🎧\s*((?:Atmos|DD\+|DDP|AAC|TrueHD|DTS)[^\n]+?)(?=\s*🔊|\s*📦|\n|$)/i);
+    // 🔊 الصوت — فقط من أكواد صوتية معروفة
+    var mAudio = d.match(/(?:🎧|🔊)\s*((?:Atmos|DD\+|DDP|AAC|TrueHD|DTS|EAC3|AC3)[^\n]*?)(?=\s*🔊|\s*📦|\n|$)/i);
     if (mAudio) info.audio = mAudio[1].trim();
-
-    // إذا ما فيه Atmos/DDP بالوصف، خذ من 🔊
-    if (!info.audio) {
-        var mAudioLine = d.match(/🔊\s*([^\n]+)/);
-        if (mAudioLine) info.audio = mAudioLine[1].trim();
-    }
 
     // 🔊 القنوات (5.1, 7.1, 2.0)
     var mChan = d.match(/🔊\s*(\d+\.\d+)\b/);
+    if (!mChan) mChan = d.match(/🎧\s*(\d+\.\d+)\b/);
     if (mChan) info.channels = mChan[1];
 
     return info;
@@ -338,7 +337,7 @@ function makeStream(entry, rank) {
     if (size) nameParts.push(size);
     var visibleName = nameParts.join(" • ");
 
-    // ── السطر التفصيلي: 6 أسطر تغطي كل الحقول ──
+    // ── السطر التفصيلي ──
     // سطر 1: 🎬 العنوان  🎧 S##  📼 E##
     var l1 = "";
     if (serverInfo.titleLine) {
@@ -353,15 +352,15 @@ function makeStream(entry, rank) {
     if (serverInfo.bitrate) l2parts.push("📊 " + serverInfo.bitrate);
     var l2 = l2parts.join("  •  ");
 
-    // سطر 3: 🔊 الصوت  •  📦 الحجم
+    // سطر 3: 🔊 الصوت  •  القنوات  •  📦 الحجم
     var l3parts = [];
     if (serverInfo.audio) l3parts.push("🔊 " + serverInfo.audio);
     if (serverInfo.channels) l3parts.push(serverInfo.channels);
     if (serverInfo.size) l3parts.push("📦 " + serverInfo.size);
     var l3 = l3parts.join("  •  ");
 
-    // سطر 4: 🏷️ المجموعة
-    var l4 = serverInfo.group ? "🏷️ " + serverInfo.group : "";
+    // سطر 4: 🏷️/🎭 المجموعة — مع الحفاظ على إيموجي كل واحدة
+    var l4 = serverInfo.group ? serverInfo.group : "";
 
     // سطر 5: 💻 الويب  •  🔍 مصدر الفحص
     var l5parts = [];
