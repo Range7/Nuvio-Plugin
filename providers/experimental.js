@@ -1,7 +1,7 @@
 /**
  * Experimental Nuvio Provider
  * PenguPlay (pengu.uk) Stremio addon — Experimental source only
- * STRICT 4K & 1080p ONLY — Min 750MB — Rich server info like 2Peckle
+ * STRICT 4K & 1080p ONLY — Min 1GB — Rich server info like 2Peckle
  */
 
 // ── Protected strings (Base64, split into chunks) ────────────────────────────
@@ -31,7 +31,7 @@ var _0xC5 = "MjAlMjIlM0ElMjJ1bmNoZWNrZWQlMjIlMkMlMjJyZXNfNDgwJTIyJTNBJTIydW5j";
 var _0xC6 = "aGVja2VkJTIyJTJDJTIycmVzXzM2MCUyMiUzQSUyMnVuY2hlY2tlZCUyMiU3RA==";
 var ADDON_CONFIG = b64decode(_0xC1 + _0xC2 + _0xC3 + _0xC4 + _0xC5 + _0xC6);
 var UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36";
-var MIN_SIZE_BYTES = 750 * 1024 * 1024; // 750MB floor — anything under gets dropped
+var MIN_SIZE_BYTES = 1024 * 1024 * 1024; // 1.0GB floor — anything under gets dropped
 
 function getTmdbKey() {
     try {
@@ -211,14 +211,40 @@ function parseServerInfo(description) {
 
     var mSrc = d.match(/🎥\s*([^🎞\n]+?)\s*(?:🎞️|\n|$)/);
     if (mSrc) info.source = mSrc[1].trim();
-    var mCodec = d.match(/🎞️\s*([^\n]+)/);
+
+    var mCodec = d.match(/🎞️\s*([^\n🎧🔊]+)/);
     if (mCodec) info.codec = mCodec[1].trim();
 
-    var mAudio = d.match(/(?:🔊|🎧)\s*([^\n]+)/);
+    // audio: prefer 🎧 ... 🔊; fall back to old 🔊/🎧 single-tag style
+    var mAudio = d.match(/🎧\s*([^🔊\n]+)/);
     if (mAudio) info.audio = mAudio[1].trim();
+    if (!info.audio) {
+        var mAudioOld = d.match(/(?:🔊|🎧)\s*([^\n]+)/);
+        if (mAudioOld) info.audio = mAudioOld[1].trim();
+    }
+
+    var mChan = d.match(/🔊\s*([^🗣\n]+)/);
+    if (mChan) info.channels = mChan[1].trim();
+
+    // languages + subtitle languages on the 🗣️ line: "🗣️ 🇬🇧📝 🇬🇧"
+    var mLangLine = d.match(/🗣️\s*([^\n]+)/);
+    if (mLangLine) {
+        var parts = mLangLine[1].split(/📝/);
+        info.lang = (parts[0] || "").trim();
+        if (parts.length > 1) info.subs = (parts.slice(1).join("📝") || "").trim();
+    }
 
     var mSize = d.match(/📦\s*([\d.]+\s*(?:GB|MB|TB))/i);
     if (mSize) info.size = mSize[1].toUpperCase().replace(/\s+/g, " ");
+
+    var mGroup = d.match(/🏷️\s*([^\n💻🔍]+)/);
+    if (mGroup) info.group = mGroup[1].trim();
+
+    var mWeb = d.match(/💻\s*([^\n🔍]+)/);
+    if (mWeb) info.web = mWeb[1].trim();
+
+    var mTest = d.match(/🔍\s*([^\n]+)/);
+    if (mTest) info.testSource = mTest[1].trim();
 
     var mRate = d.match(/📊\s*([\d.]+\s*Mbps)/i);
     if (mRate) info.bitrate = mRate[1];
@@ -263,7 +289,7 @@ function finalizeStreams(streams, settings) {
             }
         }
         if (sizeBytes > 0 && sizeBytes < MIN_SIZE_BYTES) {
-            console.log("[experimental] dropped (<750MB): " + (s.name || url));
+            console.log("[experimental] dropped (<1GB): " + (s.name || url));
             continue;
         }
 
@@ -278,7 +304,7 @@ function finalizeStreams(streams, settings) {
         return (b.sizeBytes || 0) - (a.sizeBytes || 0);
     });
 
-    console.log("[experimental] final streams (STRICT " + settings.qualityMode + ", min 750MB): " + filtered.length);
+    console.log("[experimental] final streams (STRICT " + settings.qualityMode + ", min 1GB): " + filtered.length);
 
     return filtered.map(function(entry, idx) {
         return makeStream(entry, idx);
@@ -303,10 +329,18 @@ function makeStream(entry, rank) {
     var mainTitle = ["Experimental", label].filter(Boolean).join(" • ");
     if (size) mainTitle += " • " + size;
 
-    var line1 = [serverInfo.source, serverInfo.codec, serverInfo.audio].filter(Boolean).join(" • ");
-    var line2 = [serverInfo.bitrate].filter(Boolean).join(" • ");
-    var line3 = [typeTag, host].filter(Boolean).join(" • ");
-    var streamTitle = [line1, line2, line3].filter(Boolean).join("\n");
+    var langLine = [];
+    if (serverInfo.lang) langLine.push("🗣️ " + serverInfo.lang);
+    if (serverInfo.subs) langLine.push("📝 " + serverInfo.subs);
+
+    var line1 = [serverInfo.source, serverInfo.codec].filter(Boolean).join(" • ");
+    var line2 = [serverInfo.audio, serverInfo.channels].filter(Boolean).join(" • ");
+    var line3 = langLine.join("  ");
+    var line4 = [serverInfo.bitrate].filter(Boolean).join(" • ");
+    var line5 = [serverInfo.group].filter(Boolean).join(" • ");
+    var line6 = [serverInfo.web, serverInfo.testSource].filter(Boolean).join(" • ");
+    var line7 = [typeTag, host].filter(Boolean).join(" • ");
+    var streamTitle = [line1, line2, line3, line4, line5, line6, line7].filter(Boolean).join("\n");
     if (!streamTitle) streamTitle = "Experimental";
 
     var score = q === "4K" ? 2 : 1;
