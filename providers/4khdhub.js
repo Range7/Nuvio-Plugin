@@ -1,5 +1,7 @@
-// 4KHDHub Provider — Deobfuscated
-// Full source, ready to run
+// ============================================================
+// 4KHDHub Provider — Deobfuscated & Fixed
+// Matches original obfuscated behavior exactly
+// ============================================================
 
 const cheerio = require("cheerio-without-node-native");
 
@@ -32,7 +34,10 @@ function resolveSettings(settings) {
   try {
     let s = settings;
     if (!s && typeof globalThis !== "undefined")
-      s = globalThis.SCRAPER_SETTINGS || globalThis.SETTINGS || globalThis.settings;
+      s =
+        globalThis.SCRAPER_SETTINGS ||
+        globalThis.SETTINGS ||
+        globalThis.settings;
     if (!s && typeof global !== "undefined")
       s = global.SCRAPER_SETTINGS || global.SETTINGS || global.settings;
     if (!s && typeof window !== "undefined")
@@ -45,8 +50,7 @@ function resolveSettings(settings) {
       const val = String(raw).toLowerCase();
       if (val.includes("largest") || val.includes("size"))
         result.sortBy = "largest";
-      else
-        result.sortBy = "quality";
+      else result.sortBy = "quality";
     }
   } catch (e) {
     console.error(`[${PROVIDER_NAME}] settings error`, e);
@@ -70,7 +74,7 @@ function onSettings() {
   ];
 }
 
-// ==================== Fetch Helpers ====================
+// ==================== Fetch ====================
 
 async function fetchText(url, referer = BASE_URL) {
   const res = await fetch(url, {
@@ -176,6 +180,7 @@ function parseSize(text) {
   return m ? m[1] + " " + m[2].toUpperCase() : "N/A";
 }
 
+// نسخة الأصل: يقبل فقط هذين الدومينين (بقية الدومينات تُفلتر في extractHubCloud)
 function isDirectVideo(url) {
   try {
     const host = new URL(url).hostname.toLowerCase();
@@ -207,7 +212,7 @@ async function getMetadata(id, type) {
   };
 }
 
-// ==================== Find Search Page ====================
+// ==================== Find Page (matching original) ====================
 
 async function findPage(meta, isSeries, season) {
   const query =
@@ -220,7 +225,8 @@ async function findPage(meta, isSeries, season) {
   const $ = cheerio.load(html);
   let best = null;
 
-  $(".post-item").each((_, el) => {
+  // الأصل يستخدم "article" كحاوية، ثم .entry-title / .category / .year
+  $("article").each((_, el) => {
     const $el = $(el);
     const title = $el.find(".entry-title").text().trim();
     const cat = $el.find(".category").text().trim();
@@ -236,7 +242,8 @@ async function findPage(meta, isSeries, season) {
 
     let score = titleScore(meta.title, title);
     if (meta.year && year === meta.year) score += 0.35;
-    else if (meta.year && year && Math.abs(year - meta.year) > 1) score -= 0.5;
+    else if (meta.year && year && Math.abs(year - meta.year) > 1)
+      score -= 0.5;
 
     if (isSeries && season) {
       const sm = title.match(/(?:season\s*|s)(\d+)/i);
@@ -257,9 +264,7 @@ async function decodeRedirect(url) {
   if (/hubcloud|hubdrive/i.test(url)) return url;
   try {
     const html = await fetchText(url);
-    const m =
-      html.match(/['"]o['"]\s*,\s*['"]([^'"]+)['"]/)?.[1] ||
-      html.match(/'o','([^']+)'/)?.[1];
+    const m = html.match(/['"]o['"]\s*,\s*['"]([^'"]+)['"]/)?.[1];
     if (!m) return url;
     const decoded = decodeBase64(rot13(decodeBase64(decodeBase64(m))));
     const parsed = JSON.parse(decoded);
@@ -336,7 +341,7 @@ async function extractHubCloud(url, meta) {
   }
 }
 
-// ==================== Stream Extraction ====================
+// ==================== Extract Streams ====================
 
 async function extractStreams(pageUrl, isSeries, season, episode) {
   const html = await fetchText(pageUrl);
@@ -373,7 +378,7 @@ async function extractStreams(pageUrl, isSeries, season, episode) {
   return results.flat();
 }
 
-// ==================== Build Stream Object ====================
+// ==================== Build Stream ====================
 
 function buildStreamObject(
   mediaTitle,
