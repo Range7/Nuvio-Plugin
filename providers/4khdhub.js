@@ -1,448 +1,338 @@
-/**
- * 4khdhub - Built from src/4khdhub/
- * Modified:
- *  - Only 4K and 1080p, largest per tier
- *  - Numbered name: "01 • 4KHDHub • 4K • 4.6GB", "02 • 4KHDHub • 1080p • 2.1GB"
- *  - Anime (Animation + Japanese origin) skipped
- */
-var __create = Object.create;
-var __defProp = Object.defineProperty;
-var __defProps = Object.defineProperties;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __getOwnPropDescs = Object.getOwnPropertyDescriptors;
-var __getOwnPropNames = Object.getOwnPropertyNames;
-var __getOwnPropSymbols = Object.getOwnPropertySymbols;
-var __getProtoOf = Object.getPrototypeOf;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __propIsEnum = Object.prototype.propertyIsEnumerable;
-var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-var __spreadValues = (a, b) => {
-  for (var prop in b || (b = {}))
-    if (__hasOwnProp.call(b, prop))
-      __defNormalProp(a, prop, b[prop]);
-  if (__getOwnPropSymbols)
-    for (var prop of __getOwnPropSymbols(b)) {
-      if (__propIsEnum.call(b, prop))
-        __defNormalProp(a, prop, b[prop]);
+var _0xT=['cheerio','4KHDHub','https://4khdhub.one','https://api.themoviedb.org/3','439c478a771f35c05022f9feabcca01c','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36','User-Agent','Referer','/','0','','1','\ufeff','\u200b','quality','sortBy','SCRAPER_SETTINGS','SETTINGS','settings','sort_by','sort','value','label','] settings error:','largest','select','Sort By','Quality','Size','size','HTTP ',': ',' ','&','"','<','>','2160','4k','2160p','1080','1080p','uhd','fhd','N/A','.r2.dev','.r2.cloudflarestorage.com','tv','series','movie','?api_key=','&language=en-US','TMDB ',' season ','/?s=','.movie-card, article, .post','h2, .entry-title, .title','.category, .type','.meta, .year','href','a[href]','div.card-header','title','.size, .card-body','S','Episode-','.episode-item','.season-title, .title','.episode-download-item','.download-item, a[href]','.title, .name','Single-Audio','Multi-Audio','hindi','⚡','🔥','MP4','MKV',' | 📼 ','HDR10+','HDR10','HDR','H.265','H.264','🌈 ','🎞️ ','👁️ DV',' | ','TrueHD 7.1','DDP5.1','DD5.1',' Atmos','🎧 ','BluRay','WEB-DL','📀 ','🎬 ',' - (',') ',' (',')','\n',' | 📦 ','] getStreams: ',' type=',' S=',' E=',' sortBy=','E',' [','] ','[','] Returning ',' stream(s) sorted by ','] error: '];
+function _0xS(_0xi){return _0xT[_0xi];}
+
+var _0x0=require(_0xS(0));
+var _0x1=_0xS(1);
+var _0x2=_0xS(2);
+var _0x3=_0xS(3);
+var _0x4=_0xS(4);
+var _0x5=_0xS(5);
+var _0x6={};
+_0x6[_0xS(6)]=_0x5;
+_0x6[_0xS(7)]=_0x2+_0xS(8);
+
+function _0xf1(_0xa,_0xb){
+  _0xb=_0xb||0xf423f;
+  const _0xc=Math.max(0x0,parseInt(_0xa,0xa)||0x0);
+  const _0xd=Math.max(0x0,_0xb-_0xc);
+  const _0xe=_0xd.toString(0x2).padStart(0x14,_0xS(9));
+  return _0xe.split(_0xS(10)).map(_0xf=>_0xf===_0xS(11)?_0xS(12):_0xS(13)).join(_0xS(10));
+}
+
+function _0xf2(_0x10){
+  let _0x11={};
+  _0x11[_0xS(15)]=_0xS(14);
+  try{
+    let _0x12=_0x10;
+    if(!_0x12&&typeof globalThis!=='undefined')_0x12=globalThis[_0xS(16)]||globalThis[_0xS(17)]||globalThis[_0xS(18)];
+    if(!_0x12&&typeof global!=='undefined')_0x12=global[_0xS(16)]||global[_0xS(17)]||global[_0xS(18)];
+    if(!_0x12&&typeof window!=='undefined')_0x12=window[_0xS(16)]||window[_0xS(17)]||window[_0xS(18)];
+    if(_0x12){
+      var _0x13=_0x12[_0xS(15)]||_0x12[_0xS(19)]||_0x12[_0xS(20)]||_0xS(10);
+      if(typeof _0x13==='object'&&_0x13!==null)_0x13=_0x13[_0xS(21)]||_0x13[_0xS(22)]||_0xS(10);
+      var _0x14=String(_0x13).toLowerCase();
+      if(_0x14.includes(_0xS(24)))_0x11[_0xS(15)]=_0xS(24);
+      else _0x11[_0xS(15)]=_0xS(14);
     }
-  return a;
-};
-var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
-var __copyProps = (to, from, except, desc) => {
-  if (from && typeof from === "object" || typeof from === "function") {
-    for (let key of __getOwnPropNames(from))
-      if (!__hasOwnProp.call(to, key) && key !== except)
-        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }catch(_0x15){console.error('['+_0x1+_0xS(23),_0x15);}
+  return _0x11;
+}
+
+function _0xf3(){
+  return [{type:_0xS(25),key:_0xS(15),name:_0xS(19),label:_0xS(26),options:[{label:_0xS(27),value:_0xS(14)},{label:_0xS(28),value:_0xS(29)}],default:_0xS(14)}];
+}
+
+async function _0xf4(_0x16,_0x17){
+  _0x17=_0x17||_0x2;
+  const _0x18={};
+  for(const _0x19 in _0x6)_0x18[_0x19]=_0x6[_0x19];
+  _0x18[_0xS(7)]=_0x17+_0xS(8);
+  const _0x1a=await fetch(_0x16,{headers:_0x18});
+  if(!_0x1a.ok)throw new Error(_0xS(30)+_0x1a.status+_0xS(31)+_0x16);
+  return _0x1a.text();
+}
+
+function _0xf5(_0x1b,_0x1c){
+  _0x1c=_0x1c||_0x2;
+  if(!_0x1b)return _0xS(10);
+  if(/^https?:\/\//i.test(_0x1b))return _0x1b;
+  try{return new URL(_0x1b,_0x1c).toString();}catch{return _0xS(10);}
+}
+
+function _0xf6(_0x1d){
+  const _0x1e='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';
+  const _0x1f=String(_0x1d||_0xS(10)).replace(/=+$/,_0xS(10));
+  let _0x20=_0xS(10),_0x21=0x0,_0x22,_0x23,_0x24=0x0;
+  while(_0x23=_0x1f.charAt(_0x24++)){
+    _0x23=_0x1e.indexOf(_0x23);
+    if(_0x23<0x0)continue;
+    _0x22=_0x21%0x4?_0x22*0x40+_0x23:_0x23;
+    _0x21++%0x4&&(_0x20+=String.fromCharCode(_0x22>>(-0x2*_0x21&0x6)&0xff));
   }
-  return to;
-};
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
-  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
-  mod
-));
-var __async = (__this, __arguments, generator) => {
-  return new Promise((resolve, reject) => {
-    var fulfilled = (value) => {
-      try {
-        step(generator.next(value));
-      } catch (e) {
-        reject(e);
-      }
-    };
-    var rejected = (value) => {
-      try {
-        step(generator.throw(value));
-      } catch (e) {
-        reject(e);
-      }
-    };
-    var step = (x) => x.done ? resolve(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
-    step((generator = generator.apply(__this, __arguments)).next());
+  return _0x20;
+}
+
+function _0xf7(_0x25){
+  return String(_0x25||_0xS(10)).replace(/[a-zA-Z]/g,_0x26=>{
+    const _0x27=_0x26.charCodeAt(0x0)+0xd;
+    const _0x28=_0x26<='Z'?0x5a:0x7a;
+    return String.fromCharCode(_0x27<=_0x28?_0x27:_0x27-0x1a);
   });
-};
+}
 
-var import_cheerio_without_node_native = __toESM(require("cheerio-without-node-native"));
-var BASE_URL = "https://4khdhub.one";
-var TMDB_URL = "https://api.themoviedb.org/3";
-var TMDB_KEY = "439c478a771f35c05022f9feabcca01c";
-var USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36";
-var HEADERS = { "User-Agent": USER_AGENT, Referer: `${BASE_URL}/` };
+function _0xf8(_0x29){
+  if(!_0x29)return _0xS(10);
+  var _0x2a=/&(nbsp|amp|quot|lt|gt|#038);/g,_0x2b={'nbsp':_0xS(32),'amp':_0xS(33),'quot':_0xS(34),'lt':_0xS(35),'gt':_0xS(36),'#038':_0xS(33)};
+  return _0x29.replace(_0x2a,function(_0x2c,_0x2d){return _0x2b[_0x2d];}).replace(/&#(\d+);/g,function(_0x2e,_0x2f){return String.fromCharCode(_0x2f);});
+}
 
-function fetchText(_0) {
-  return __async(this, arguments, function* (url, referer = BASE_URL) {
-    const response = yield fetch(url, {
-      headers: __spreadProps(__spreadValues({}, HEADERS), { Referer: `${referer}/` })
+function _0xf9(_0x30){
+  return String(_0x30||_0xS(10)).toLowerCase().replace(/\[[^\]]*]/g,_0xS(32)).replace(/\b(the|a|an|directors?|cut)\b/g,_0xS(32)).replace(/[^a-z0-9]+/g,_0xS(32)).replace(/\s+/g,_0xS(32)).trim();
+}
+
+function _0xfa(_0x31,_0x32){
+  const _0x33=_0xf9(_0x31).split(_0xS(32)).filter(Boolean);
+  const _0x34=new Set(_0xf9(_0x32).split(_0xS(32)).filter(Boolean));
+  if(!_0x33.length)return 0x0;
+  const _0x35=_0x33.filter(_0x36=>_0x34.has(_0x36)).length;
+  return _0x35/_0x33.length;
+}
+
+function _0xfb(_0x37){
+  const _0x38=String(_0x37||_0xS(10)).toLowerCase();
+  if(_0x38.indexOf(_0xS(37))>=0x0||_0x38.indexOf(_0xS(38))>=0x0)return _0xS(39);
+  if(_0x38.indexOf(_0xS(40))>=0x0)return _0xS(41);
+  return _0xS(41);
+}
+
+function _0xfc(_0x39){
+  const _0x3a=String(_0x39).toLowerCase();
+  if(_0x3a.includes(_0xS(37))||_0x3a.includes(_0xS(38))||_0x3a.includes(_0xS(42)))return 0x4;
+  if(_0x3a.includes(_0xS(40))||_0x3a.includes(_0xS(43)))return 0x3;
+  return 0x0;
+}
+
+function _0xfd(_0x3b){
+  const _0x3c=String(_0x3b||_0xS(10)).match(/([\d.]+)\s*(GB|MB|KB)/i);
+  return _0x3c?_0x3c[0x1]+_0xS(32)+_0x3c[0x2].toUpperCase():_0xS(44);
+}
+
+function _0xfe(_0x3d){
+  try{
+    const _0x3e=new URL(_0x3d).hostname.toLowerCase();
+    return _0x3e.endsWith(_0xS(45))||_0x3e.endsWith(_0xS(46));
+  }catch{return![];}
+}
+
+async function _0xff(_0x3f,_0x40){
+  const _0x41=_0x40===_0xS(47)||_0x40===_0xS(48)?_0xS(47):_0xS(49);
+  const _0x42=await fetch(_0x3+_0xS(8)+_0x41+_0xS(8)+encodeURIComponent(_0x3f)+_0xS(50)+_0x4+_0xS(51),{headers:{'Accept':'application/json','User-Agent':_0x5}});
+  if(!_0x42.ok)throw new Error(_0xS(52)+_0x42.status);
+  const _0x43=await _0x42.json();
+  const _0x44=_0x41===_0xS(47)?_0x43.first_air_date:_0x43.release_date;
+  return {title:_0x41===_0xS(47)?_0x43.name:_0x43.title,year:_0x44?Number(_0x44.slice(0x0,0x4)):null};
+}
+
+async function _0x100(_0x45,_0x46,_0x47){
+  const _0x48=_0x46&&_0x47?_0x45.title+_0xS(53)+_0x47:(_0x45.title+_0xS(32)+(_0x45.year||_0xS(10))).trim();
+  const _0x49=await _0xf4(_0x2+_0xS(54)+encodeURIComponent(_0x48));
+  const _0x4a=_0x0.load(_0x49);
+  let _0x4b=null;
+  _0x4a(_0xS(55)).each((_0x4c,_0x4d)=>{
+    const _0x4e=_0x4a(_0x4d);
+    const _0x4f=_0x4e.find(_0xS(56)).text().trim().toLowerCase();
+    const _0x50=_0x4e.find(_0xS(57)).text().trim().toLowerCase();
+    const _0x51=_0x4e.find(_0xS(58)).text().trim();
+    const _0x52=_0x4e.attr(_0xS(59))||_0x4e.find(_0xS(60)).first().attr(_0xS(59));
+    if(!_0x4f||!_0x52)return;
+    if(_0x46&&!/series/i.test(_0x50))return;
+    if(!_0x46&&!/movies?/i.test(_0x50))return;
+    const _0x53=_0x51.match(/\b(19|20)\d{2}\b/);
+    const _0x54=_0x53?Number(_0x53[0x0]):null;
+    let _0x55=_0xfa(_0x45.title,_0x4f);
+    if(_0x45.year&&_0x54===_0x45.year)_0x55+=0.35;
+    else if(_0x45.year&&_0x54&&Math.abs(_0x54-_0x45.year)>0x1)_0x55-=0.5;
+    if(_0x46&&_0x47){
+      const _0x56=_0x4f.match(/(?:season\s*|s)(\d+)/i);
+      if(_0x56&&Number(_0x56[0x1])===Number(_0x47))_0x55+=0.4;
+      else if(_0x56)_0x55-=0.6;
+    }
+    if(!_0x4b||_0x55>_0x4b.score)_0x4b={url:_0xf5(_0x52),score:_0x55,title:_0x4f};
+  });
+  return _0x4b&&_0x4b.score>=0.7?_0x4b.url:_0xS(10);
+}
+
+async function _0x101(_0x57){
+  if(/hubcloud|hubdrive/i.test(_0x57))return _0x57;
+  try{
+    const _0x58=await _0xf4(_0x57);
+    const _0x59=(_0x58.match(/['"]o['"]\s*,\s*['"]([^'"]+)['"]/)||[])[0x1]||(_0x58.match(/'o','([^']+)'/)||[])[0x1];
+    if(!_0x59)return _0x57;
+    const _0x5a=_0xf6(_0xf7(_0xf6(_0xf6(_0x59))));
+    const _0x5b=JSON.parse(_0x5a);
+    return _0x5b.o?_0xf6(_0x5b.o).trim():_0x57;
+  }catch{return _0x57;}
+}
+
+async function _0x102(_0x5c,_0x5d,_0x5e){
+  const _0x5f=_0x5c.find(_0xS(60)).get();
+  for(const _0x60 of _0x5f){
+    const _0x61=_0x5e(_0x60);
+    const _0x62=_0x61.attr(_0xS(59));
+    const _0x63=_0x61.text();
+    if(!_0x62)continue;
+    if(/hubcloud/i.test(_0x63)||/hubcloud/i.test(_0x62))return _0x101(_0xf5(_0x62,_0x5d));
+    if(/hubdrive/i.test(_0x63)||/hubdrive/i.test(_0x62)){
+      const _0x64=await _0x101(_0xf5(_0x62,_0x5d));
+      try{
+        const _0x65=await _0xf4(_0x64,_0x5d);
+        const _0x66=_0x0.load(_0x65);
+        const _0x67=_0x66(_0xS(60)).filter((_0x68,_0x69)=>{const _0x6a=_0x66(_0x69);return/hubcloud/i.test(_0x6a.text()+_0xS(32)+(_0x6a.attr(_0xS(59))||_0xS(10)));}).first().attr(_0xS(59));
+        if(_0x67)return _0xf5(_0x67,_0x64);
+      }catch{}
+    }
+  }
+  return _0xS(10);
+}
+
+async function _0x103(_0x6b,_0x6c){
+  try{
+    let _0x6d=await _0xf4(_0x6b,_0x6b);
+    let _0x6e=_0x6b;
+    const _0x6f=(_0x6d.match(/var url\s*=\s*['"]([^'"]+)['"]/)||[])[0x1]||_0x0.load(_0x6d)(_0xS(60)).attr(_0xS(59));
+    if(_0x6f){_0x6e=_0xf5(_0x6f,_0x6b);_0x6d=await _0xf4(_0x6e,_0x6b);}
+    const _0x70=_0x0.load(_0x6d);
+    const _0x71=_0x70(_0xS(61)).text().replace(/\s+/g,_0xS(32)).trim()||_0x70(_0xS(62)).text().trim()||_0x6c.title;
+    const _0x72=_0xfd(_0x70(_0xS(63)).first().text());
+    const _0x73=_0x72!==_0xS(44)?_0x72:_0x6c.size;
+    const _0x74=_0xfb(_0x71);
+    const _0x75=[];
+    _0x70(_0xS(60)).each((_0x76,_0x77)=>{
+      const _0x78=_0x70(_0x77).attr(_0xS(59));
+      if(!_0x78||!_0xfe(_0x78))return;
+      _0x75.push({url:_0x78,title:_0x71,quality:_0x74,size:_0x73});
     });
-    if (!response.ok) throw new Error(`HTTP ${response.status}: ${url}`);
-    return response.text();
-  });
+    return _0x75;
+  }catch{return[];}
 }
 
-function absoluteUrl(value, base = BASE_URL) {
-  if (!value) return "";
-  if (/^https?:\/\//i.test(value)) return value;
-  try { return new URL(value, base).toString(); } catch (e) { return ""; }
-}
-
-function decodeBase64(value) {
-  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-  const input = String(value || "").replace(/=+$/, "");
-  let output = "";
-  let count = 0;
-  let bits;
-  let buffer;
-  let index = 0;
-  while (buffer = input.charAt(index++)) {
-    buffer = alphabet.indexOf(buffer);
-    if (buffer < 0) continue;
-    bits = count % 4 ? bits * 64 + buffer : buffer;
-    if (count++ % 4) {
-      output += String.fromCharCode(bits >> (-2 * count & 6) & 255);
-    }
-  }
-  return output;
-}
-
-function rot13(value) {
-  return String(value || "").replace(/[a-zA-Z]/g, (character) => {
-    const code = character.charCodeAt(0) + 13;
-    const limit = character <= "Z" ? 90 : 122;
-    return String.fromCharCode(code <= limit ? code : code - 26);
-  });
-}
-
-function normalizeTitle(value) {
-  return String(value || "").toLowerCase().replace(/\[[^\]]*]/g, " ").replace(/\b(the|a|an|directors?|cut)\b/g, " ").replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim();
-}
-
-function titleScore(expected, candidate) {
-  const expectedWords = normalizeTitle(expected).split(" ").filter(Boolean);
-  const candidateWords = new Set(normalizeTitle(candidate).split(" ").filter(Boolean));
-  if (!expectedWords.length) return 0;
-  const matches = expectedWords.filter((word) => candidateWords.has(word)).length;
-  return matches / expectedWords.length;
-}
-
-function parseQuality(value) {
-  if (/\b(?:2160p|4k)\b/i.test(value)) return "2160p";
-  const match = String(value || "").match(/\b(1080|720|480)p\b/i);
-  return match ? `${match[1]}p` : "Unknown";
-}
-
-function parseSize(value) {
-  const match = String(value || "").match(/([\d.]+)\s*(GB|MB|KB)/i);
-  return match ? `${match[1]} ${match[2].toUpperCase()}` : "Unknown";
-}
-
-function sizeToBytes(sizeStr) {
-  var m = String(sizeStr || "").match(/([\d.]+)\s*(TB|GB|MB|KB)/i);
-  if (!m) return 0;
-  var n = parseFloat(m[1]);
-  var u = m[2].toUpperCase();
-  if (u === "TB") return n * 1024 * 1024 * 1024 * 1024;
-  if (u === "GB") return n * 1024 * 1024 * 1024;
-  if (u === "MB") return n * 1024 * 1024;
-  if (u === "KB") return n * 1024;
-  return n;
-}
-
-function parseReleaseDetails(value, fallbackQuality = "Unknown") {
-  var _a, _b, _c, _d, _e, _f;
-  const text = String(value || "").replace(/_+/g, " ");
-  const quality = parseQuality(text) !== "Unknown" ? parseQuality(text) : fallbackQuality;
-  const details = [];
-  const service = (_a = text.match(/\b(?:AMZN|NF|DSNP|MAX|ATVP|HULU)\b/i)) == null ? void 0 : _a[0];
-  if (service) details.push(service.toUpperCase());
-  const release = (_b = text.match(/\b(?:BluRay|WEB[. -]?DL|WEB[. -]?Rip|BRRip|HDRip|DVDRip)\b/i)) == null ? void 0 : _b[0];
-  if (/\bUHD\b/i.test(text) && /BluRay/i.test(release || "")) details.push("UHD BluRay");
-  else if (release) details.push(release.replace(/WEB[. -]?DL/i, "WEB-DL").replace(/WEB[. -]?Rip/i, "WEBRip"));
-  if (/\bREMUX\b/i.test(text)) details.push("REMUX");
-  if (/\bREPACK\b/i.test(text)) details.push("REPACK");
-  if (/\bHDR10\+?|\bHDR\b/i.test(text)) details.push("HDR");
-  if (/\b(?:Dolby[ -]?Vision|DoVi|DV)\b/i.test(text)) details.push("DV");
-  if (/\b10[ -]?bit\b/i.test(text)) details.push("10-bit");
-  const codec = (_c = text.match(/\b(?:HEVC|AVC|AV1|x265|x264|H[.]?265|H[.]?264)\b/i)) == null ? void 0 : _c[0];
-  if (codec) details.push(codec.toUpperCase().replace(/^H265$/, "H.265").replace(/^H264$/, "H.264"));
-  if (/\bMulti(?:[. -]?Audio)?\b/i.test(text)) details.push("Multi Audio");
-  const audioDetails = [];
-  for (const language of ["Hindi", "English", "Romanian", "Tamil", "Telugu", "Malayalam", "Bengali"]) {
-    const section = ((_d = text.match(new RegExp(`\\b${language}\\b([^+\\]]*)`, "i"))) == null ? void 0 : _d[1]) || "";
-    const audio = (_e = section.match(/(?:DDP?\s*\d\.\d|DTS-HD\s*MA\s*\d\.\d|DTS\s*\d\.\d|TrueHD\s*\d\.\d|AAC\s*\d\.\d|Atmos)/i)) == null ? void 0 : _e[0];
-    if (audio) audioDetails.push(`${language} ${audio.replace(/DDP?\s*/i, (match) => match.trim().toUpperCase()).replace(/\s+/g, " ")}`);
-    else if (new RegExp(`\\b${language}\\b`, "i").test(text)) audioDetails.push(language);
-  }
-  if (!audioDetails.some((detail) => /(?:DDP?|DTS|TrueHD|AAC|Atmos)/i.test(detail))) {
-    const audio = (_f = text.match(/\b(?:DDP?\s*\d[.]\d|DTS-HD\s*MA\s*\d[.]\d|DTS\s*\d[.]\d|TrueHD(?:[.]?Atmos)?[. ]*\d[.]\d|AAC\s*\d[.]\d|Atmos[. ]*\d[.]\d)\b/i)) == null ? void 0 : _f[0];
-    if (audio) details.push(audio.replace(/DDP?\s*/i, (match) => match.trim().toUpperCase()).replace(/\s+/g, " "));
-  }
-  details.push(...audioDetails);
-  if (/\bE-?Sub\b/i.test(text)) details.push("ESub");
-  return [quality, ...details].filter(Boolean).join(" \xB7 ");
-}
-
-function isDirectVideo(url) {
-  try {
-    const host = new URL(url).hostname.toLowerCase();
-    return host.endsWith(".workers.dev") || host.endsWith(".r2.cloudflarestorage.com");
-  } catch (e) { return false; }
-}
-
-function qualityRank(quality) {
-  var q = String(quality || "").toLowerCase();
-  if (q.indexOf("2160") !== -1 || q.indexOf("4k") !== -1) return 3;
-  if (q.indexOf("1080") !== -1) return 2;
-  if (q.indexOf("720") !== -1) return 1;
-  return 0;
-}
-
-function shortQualityLabel(rank) {
-  if (rank === 3) return "4K";
-  if (rank === 2) return "1080p";
-  return "";
-}
-
-function getMetadata(tmdbId, mediaType) {
-  return __async(this, null, function* () {
-    const endpoint = mediaType === "tv" || mediaType === "series" ? "tv" : "movie";
-    const response = yield fetch(
-      `${TMDB_URL}/${endpoint}/${encodeURIComponent(tmdbId)}?api_key=${TMDB_KEY}`,
-      { headers: { Accept: "application/json", "User-Agent": USER_AGENT } }
-    );
-    if (!response.ok) throw new Error(`TMDB HTTP ${response.status}`);
-    const data = yield response.json();
-    const date = endpoint === "tv" ? data.first_air_date : data.release_date;
-
-    var genres = data.genres || [];
-    var hasAnimation = genres.some(function (g) {
-      return g && g.name && g.name.toLowerCase() === "animation";
+async function _0x104(_0x79,_0x7a,_0x7b,_0x7c){
+  const _0x7d=await _0xf4(_0x79);
+  const _0x7e=_0x0.load(_0x7d);
+  const _0x7f=[];
+  if(_0x7a&&_0x7b&&_0x7c){
+    const _0x80=_0xS(64)+String(_0x7b).padStart(0x2,_0xS(9));
+    const _0x81=_0xS(65)+String(_0x7c).padStart(0x2,_0xS(9));
+    _0x7e(_0xS(66)).each((_0x82,_0x83)=>{
+      const _0x84=_0x7e(_0x83);
+      if(!_0x84.find(_0xS(67)).text().includes(_0x80))return;
+      _0x84.find(_0xS(68)).each((_0x85,_0x86)=>{if(_0x7e(_0x86).text().includes(_0x81))_0x7f.push(_0x7e(_0x86));});
     });
-    var originalLang = data.original_language || "";
-    var originCountry = data.origin_country || [];
-
-    var isAnime = hasAnimation && (originalLang === "ja" || originCountry.indexOf("JP") !== -1);
-
-    return {
-      title: endpoint === "tv" ? data.name : data.title,
-      year: date ? Number(date.slice(0, 4)) : null,
-      isAnime: isAnime,
-      originalLang: originalLang,
-      originCountry: originCountry
-    };
-  });
+  }else _0x7e(_0xS(69)).each((_0x87,_0x88)=>_0x7f.push(_0x7e(_0x88)));
+  const _0x89=await Promise.all(_0x7f.map(async _0x8a=>{
+    const _0x8b=_0x8a.text().replace(/\s+/g,_0xS(32)).trim();
+    const _0x8c={title:_0x8a.find(_0xS(70)).text().trim()||_0x8b,quality:_0xfb(_0x8b),size:_0xfd(_0x8b)};
+    const _0x8d=await _0x102(_0x8a,_0x79,_0x7e);
+    return _0x8d?_0x103(_0x8d,_0x8c):[];
+  }));
+  return _0x89.flat();
 }
 
-function findPage(metadata, isSeries, season) {
-  return __async(this, null, function* () {
-    const query = isSeries && season ? `${metadata.title} Season ${season}` : `${metadata.title} ${metadata.year || ""}`.trim();
-    const html = yield fetchText(`${BASE_URL}/?s=${encodeURIComponent(query)}`);
-    const $ = import_cheerio_without_node_native.default.load(html);
-    let best = null;
-    $(".movie-card").each((_, element) => {
-      const card = $(element);
-      const title = card.find(".movie-card-title").text().trim();
-      const format = card.find(".movie-card-format").text().trim();
-      const meta = card.find(".movie-card-meta").text();
-      const href = card.attr("href") || card.find("a[href]").first().attr("href");
-      if (!title || !href) return;
-      if (isSeries && !/series/i.test(format)) return;
-      if (!isSeries && !/movies?/i.test(format)) return;
-      const yearMatch = meta.match(/\b(19|20)\d{2}\b/);
-      const year = yearMatch ? Number(yearMatch[0]) : null;
-      let score = titleScore(metadata.title, title);
-      if (metadata.year && year === metadata.year) score += 0.35;
-      else if (metadata.year && year && Math.abs(year - metadata.year) > 1) score -= 0.5;
-      if (isSeries && season) {
-        const foundSeason = title.match(/(?:season\s*|s)(\d+)/i);
-        if (foundSeason && Number(foundSeason[1]) === Number(season)) score += 0.4;
-        else if (foundSeason) score -= 0.6;
-      }
-      if (!best || score > best.score) best = { url: absoluteUrl(href), score, title };
+function _0x105(_0x8e,_0x8f,_0x90,_0x91,_0x92,_0x93,_0x94,_0x95,_0x96){
+  let _0x97=_0xS(10);
+  try{_0x97=decodeURIComponent(_0x90||_0xS(10));}catch{_0x97=_0x90||_0xS(10);}
+  const _0x98=_0xf8(_0x8f||_0xS(10)).replace(/[\n\t]+/g,_0xS(32)).replace(/\s{2,}/g,_0xS(32)).trim();
+  const _0x99=(_0x98+_0xS(32)+_0x97).toLowerCase();
+  let _0x9a=_0x91;
+  const _0x9b=_0x99.match(/\b(2160p|4k|1080p)\b/i);
+  if(_0x9b){
+    const _0x9c=_0x9b[0x1].toLowerCase();
+    if(_0x9c===_0xS(38)||_0x9c===_0xS(39))_0x9a=_0xS(39);
+    else if(_0x9c===_0xS(41))_0x9a=_0xS(41);
+  }
+  if(!_0x9a||_0x9a===_0xS(44))_0x9a=_0xfb(_0x99);
+  const _0x9d=_0xfc(_0x9a);
+  let _0x9e=_0xS(71);
+  if(/\b(multi|multi\-audio)\b/i.test(_0x99))_0x9e=_0xS(72);
+  else if(/\b(dual|dual\-audio|dubbed|hindi)\b/i.test(_0x99)||_0xf8(_0x8e||_0xS(10)).toLowerCase().includes(_0xS(73)))_0x9e=_0xS(72);
+  let _0x9f=_0x92&&_0x92!==_0xS(44)?_0x92:_0xS(44);
+  const _0xa0=_0x98.match(/\[\s*(\d+(?:\.\d+)?\s*[MG]B)\s*\]/i)||_0x98.match(/(\d+(?:\.\d+)?\s*[MG]B)/i)||_0x97.match(/(\d+(?:\.\d+)?\s*[MG]B)/i);
+  if(_0xa0)_0x9f=_0xa0[0x1].toUpperCase().replace(/\s+/g,_0xS(10));
+  let _0xa1=0x0;
+  if(_0x9f!==_0xS(44)){
+    const _0xa2=_0x9f.match(/([\d.]+)\s*(GB|MB)/i);
+    if(_0xa2){
+      const _0xa3=parseFloat(_0xa2[0x1]);
+      const _0xa4=_0xa2[0x2].toUpperCase();
+      _0xa1=Math.round(_0xa4.includes('GB')?_0xa3*0x400:_0xa3);
+    }
+  }
+  let _0xa5;
+  if(_0x96===_0xS(24))_0xa5=_0xf1(_0xa1,0xf423f);
+  else _0xa5=_0xf1(_0x9d*0x186a0+_0xa1,0xf423f);
+  const _0xa6=_0xa5+_0x1+_0xS(87)+_0x9a+_0xS(102)+_0x9f+_0xS(87)+_0x9e;
+  const _0xa7=_0x95&&_0x95.title?_0x95.title:_0x8e;
+  const _0xa8=_0x95&&_0x95.year?_0x95.year:_0xS(44);
+  const _0xa9=_0x9a===_0xS(39)?_0xS(74):_0xS(75);
+  const _0xaa=/\.mp4($|\?)/i.test(_0x97)||/\.mp4\b/i.test(_0x98)?_0xS(76):_0xS(77);
+  const _0xab=_0xa9+_0xS(32)+_0x9a+_0xS(78)+_0xaa;
+  const _0xac=/\bhdr10\+/i.test(_0x99)?_0xS(79):/\bhdr10\b/i.test(_0x99)?_0xS(80):_0xS(81);
+  const _0xad=/\b(h\.?265|x265|hevc)\b/i.test(_0x99)?_0xS(82):_0xS(83);
+  const _0xae=[_0xS(84)+_0xac,_0xS(85)+_0xad];
+  if(/\b(dolby\s*vision|dovi|\.dv\.)\b/i.test(_0x99)||/[\.\-_]dv[\.\-_]/i.test(_0x99))_0xae.push(_0xS(86));
+  const _0xaf=_0xae.join(_0xS(87));
+  const _0xb0=/\btruehd\s*7\.1\b/i.test(_0x99)?_0xS(88):/\bddp5\.1\b/i.test(_0x99)||/\beac3\b/i.test(_0x99)?_0xS(89):_0xS(90);
+  const _0xb1=/\batmos\b/i.test(_0x99)?_0xS(91):_0xS(10);
+  const _0xb2=_0xS(92)+_0x9e+_0xS(87)+_0xS(92)+_0xb0+_0xb1;
+  const _0xb3=/\b(bluray|blu\-ray)\b/i.test(_0x99)?_0xS(93):_0xS(94);
+  const _0xb4=_0xS(95)+_0xb3;
+  const _0xb5=(_0x94&&(_0x94.startsWith(_0xS(64))||_0x94.includes(_0xS(108))))?_0xS(96)+_0xa7+_0xS(97)+_0xa8+_0xS(98)+_0x94.replace(/E0*(\d+)/i,_0xS(108)+'$1').replace(/S0*(\d+)/i,_0xS(64)+'$1'):_0xS(96)+_0xa7+_0xS(99)+_0xa8+_0xS(100);
+  const _0xb6=_0xb5+_0xS(101)+_0xab+_0xS(101)+_0xaf+_0xS(101)+_0xb2+_0xS(101)+_0xb4;
+  return {qualityRank:_0x9d,sizeInMB:_0xa1,data:{name:_0xa6,title:_0xb6,size:_0xb6,description:_0xb6,url:_0x90||_0xS(10),behaviorHints:{notWebReady:!![],proxyHeaders:{request:_0x93||{'Referer':_0x2+_0xS(8)}}}}};
+}
+
+async function _0x106(_0xb7,_0xb8,_0xb9,_0xba,_0xbb){
+  _0xb9=_0xb9||null;_0xba=_0xba||null;_0xbb=_0xbb||{};
+  const _0xbc=_0xb8===_0xS(47)||_0xb8===_0xS(48);
+  if(!_0xb7||(!_0xbc&&_0xb8!==_0xS(49)))return[];
+  try{
+    const _0xbd=_0xf2(_0xbb);
+    console.log('['+_0x1+_0xS(103)+_0xb7+_0xS(104)+_0xb8+_0xS(105)+_0xb9+_0xS(106)+_0xba+_0xS(107)+_0xbd.sortBy);
+    const _0xbe=await _0xff(_0xb7,_0xb8);
+    const _0xbf=await _0x100(_0xbe,_0xbc,_0xb9);
+    if(!_0xbf)return[];
+    const _0xc0=await _0x104(_0xbf,_0xbc,_0xb9,_0xba);
+    let _0xc1=_0xS(10);
+    if(_0xbc){
+      const _0xc2=parseInt(_0xb9,0xa)||0x1;
+      const _0xc3=parseInt(_0xba,0xa)||0x1;
+      _0xc1=_0xS(64)+(_0xc2<0xa?_0xS(9):_0xS(10))+_0xc2+_0xS(108)+(_0xc3<0xa?_0xS(9):_0xS(10))+_0xc3;
+    }
+    const _0xc4={};
+    const _0xc5=[];
+    for(const _0xc6 of _0xc0){
+      if(!_0xfe(_0xc6.url)||_0xc4[_0xc6.url])continue;
+      _0xc4[_0xc6.url]=!![];
+      const _0xc7=_0xc6.title+_0xS(109)+_0xc6.quality+_0xS(110)+_0xc6.size;
+      const _0xc8=_0x105(_0xbe.title,_0xc7,_0xc6.url,_0xc6.quality,_0xc6.size,{'Referer':_0x2+_0xS(8),'User-Agent':_0x5},_0xc1.trim(),_0xbe,_0xbd.sortBy);
+      if(_0xc8.qualityRank!==0x4&&_0xc8.qualityRank!==0x3)continue;
+      _0xc5.push(_0xc8);
+    }
+    const _0xc9=_0xc5.filter(_0xca=>_0xca.qualityRank===0x4);
+    const _0xcb=_0xc5.filter(_0xcc=>_0xcc.qualityRank===0x3).sort((_0xcd,_0xce)=>_0xce.sizeInMB-_0xcd.sizeInMB);
+    const _0xcf=_0xcb.slice(0x0,Math.max(0x1,_0xcb.length-0x1));
+    const _0xd0=[..._0xc9,..._0xcf];
+    _0xd0.sort((_0xd1,_0xd2)=>{
+      if(_0xbd.sortBy===_0xS(24))return _0xd2.sizeInMB-_0xd1.sizeInMB;
+      if(_0xd2.qualityRank!==_0xd1.qualityRank)return _0xd2.qualityRank-_0xd1.qualityRank;
+      return _0xd2.sizeInMB-_0xd1.sizeInMB;
     });
-    return best && best.score >= 0.7 ? best.url : "";
-  });
+    console.log('['+_0x1+_0xS(112)+_0xd0.length+_0xS(113)+_0xbd.sortBy);
+    return _0xd0.map(_0xd3=>_0xd3.data);
+  }catch(_0xd4){
+    console.error('['+_0x1+_0xS(114)+_0xd4.message);
+    return[];
+  }
 }
 
-function decodeRedirect(url) {
-  return __async(this, null, function* () {
-    var _a, _b;
-    if (/hubcloud|hubdrive/i.test(url)) return url;
-    try {
-      const html = yield fetchText(url);
-      const encoded = ((_a = html.match(/['"]o['"]\s*,\s*['"]([^'"]+)['"]/)) == null ? void 0 : _a[1]) || ((_b = html.match(/'o','([^']+)'/)) == null ? void 0 : _b[1]);
-      if (!encoded) return url;
-      const decoded = decodeBase64(rot13(decodeBase64(decodeBase64(encoded))));
-      const payload = JSON.parse(decoded);
-      return payload.o ? decodeBase64(payload.o).trim() : url;
-    } catch (e) { return url; }
-  });
-}
-
-function findHubCloud(item, pageUrl, $) {
-  return __async(this, null, function* () {
-    const links = item.find("a[href]").get();
-    for (const element of links) {
-      const link = $(element);
-      const href = link.attr("href");
-      const text = link.text();
-      if (!href) continue;
-      if (/hubcloud/i.test(text) || /hubcloud/i.test(href)) {
-        return decodeRedirect(absoluteUrl(href, pageUrl));
-      }
-      if (/hubdrive/i.test(text) || /hubdrive/i.test(href)) {
-        const driveUrl = yield decodeRedirect(absoluteUrl(href, pageUrl));
-        try {
-          const driveHtml = yield fetchText(driveUrl, pageUrl);
-          const $drive = import_cheerio_without_node_native.default.load(driveHtml);
-          const cloud = $drive("a[href]").filter((_, anchor) => {
-            const candidate = $drive(anchor);
-            return /hubcloud/i.test(`${candidate.text()} ${candidate.attr("href") || ""}`);
-          }).first().attr("href");
-          if (cloud) return absoluteUrl(cloud, driveUrl);
-        } catch (e) {}
-      }
-    }
-    return "";
-  });
-}
-
-function extractHubCloud(url, fallback) {
-  return __async(this, null, function* () {
-    var _a;
-    try {
-      let html = yield fetchText(url, url);
-      let pageUrl = url;
-      const redirect = ((_a = html.match(/var url\s*=\s*['"]([^'"]+)['"]/)) == null ? void 0 : _a[1]) || import_cheerio_without_node_native.default.load(html)("#download").attr("href");
-      if (redirect) {
-        pageUrl = absoluteUrl(redirect, url);
-        html = yield fetchText(pageUrl, url);
-      }
-      const $ = import_cheerio_without_node_native.default.load(html);
-      const header = $("div.card-header").text().replace(/\s+/g, " ").trim() || $("title").text().trim() || fallback.title;
-      const parsedSize = parseSize($("i#size, #size").first().text());
-      const size = parsedSize !== "Unknown" ? parsedSize : fallback.size;
-      const quality = parseQuality(header) !== "Unknown" ? parseQuality(header) : fallback.quality;
-      const displayQuality = parseReleaseDetails(header, quality);
-      const results = [];
-      $("a[href]").each((_, element) => {
-        const href = $(element).attr("href");
-        if (!href || !isDirectVideo(href)) return;
-        results.push({ url: href, title: header, quality: displayQuality, size });
-      });
-      return results;
-    } catch (e) { return []; }
-  });
-}
-
-function extractStreams(pageUrl, isSeries, season, episode) {
-  return __async(this, null, function* () {
-    const html = yield fetchText(pageUrl);
-    const $ = import_cheerio_without_node_native.default.load(html);
-    const items = [];
-    if (isSeries && season && episode) {
-      const seasonCode = `S${String(season).padStart(2, "0")}`;
-      const episodeCode = `Episode-${String(episode).padStart(2, "0")}`;
-      $(".episode-item").each((_, element) => {
-        const section = $(element);
-        if (!section.find(".episode-title").text().includes(seasonCode)) return;
-        section.find(".episode-download-item").each((__, download) => {
-          if ($(download).text().includes(episodeCode)) items.push($(download));
-        });
-      });
-    } else {
-      $(".download-item").each((_, element) => items.push($(element)));
-    }
-    const resolved = yield Promise.all(
-      items.map((item) => __async(this, null, function* () {
-        const context = item.text().replace(/\s+/g, " ").trim();
-        const fallback = {
-          title: item.find(".file-title, .episode-file-title").text().trim() || context,
-          quality: parseQuality(context),
-          size: parseSize(context)
-        };
-        const cloud = yield findHubCloud(item, pageUrl, $);
-        return cloud ? extractHubCloud(cloud, fallback) : [];
-      }))
-    );
-    return resolved.flat();
-  });
-}
-
-function getStreams(tmdbId, mediaType, season = null, episode = null) {
-  return __async(this, null, function* () {
-    const isSeries = mediaType === "tv" || mediaType === "series";
-    if (!tmdbId || !isSeries && mediaType !== "movie") return [];
-    try {
-      console.log(`[4KHDHub] Looking up ${mediaType} ${tmdbId}`);
-      const metadata = yield getMetadata(tmdbId, mediaType);
-
-      if (metadata.isAnime) {
-        console.log(`[4KHDHub] Anime detected, skipping: ${metadata.title}`);
-        return [];
-      }
-
-      const pageUrl = yield findPage(metadata, isSeries, season);
-      if (!pageUrl) return [];
-      const extracted = yield extractStreams(pageUrl, isSeries, season, episode);
-      const seen = {};
-      const allStreams = extracted
-        .filter((stream) => isDirectVideo(stream.url))
-        .filter((stream) => {
-          if (seen[stream.url]) return false;
-          seen[stream.url] = true;
-          return true;
-        })
-        .map((stream) => ({
-          name: "4KHDHub",
-          title: stream.title,
-          url: stream.url,
-          quality: stream.quality,
-          language: "hi \u2022 en",
-          size: stream.size,
-          provider: "4khdhub"
-        }))
-        .filter(function (s) {
-          var r = qualityRank(s.quality);
-          return r === 3 || r === 2;
-        });
-
-      var best4K = null, best4KBytes = -1;
-      var best1080 = null, best1080Bytes = -1;
-      for (var i = 0; i < allStreams.length; i++) {
-        var s = allStreams[i];
-        var rank = qualityRank(s.quality);
-        var bytes = sizeToBytes(s.size);
-        if (rank === 3 && bytes > best4KBytes) { best4K = s; best4KBytes = bytes; }
-        else if (rank === 2 && bytes > best1080Bytes) { best1080 = s; best1080Bytes = bytes; }
-      }
-
-      var streams = [];
-      if (best4K) streams.push(best4K);
-      if (best1080) streams.push(best1080);
-
-      for (var j = 0; j < streams.length; j++) {
-        var st = streams[j];
-        var rank2 = qualityRank(st.quality);
-        var qLabel = shortQualityLabel(rank2);
-        var sizeLabel = (st.size && st.size !== "Unknown") ? st.size : "";
-        var num = (j + 1);
-        var numStr = num < 10 ? "0" + num : "" + num;
-        var nameParts = [numStr, "4KHDHub"];
-        if (qLabel) nameParts.push(qLabel);
-        if (sizeLabel) nameParts.push(sizeLabel);
-        st.name = nameParts.join(" \u2022 ");
-      }
-
-      streams.sort(function (a, b) {
-        return qualityRank(b.quality) - qualityRank(a.quality);
-      });
-
-      console.log(`[4KHDHub] Returning ${streams.length} stream(s) — 4K kept: ${best4K ? "yes" : "no"}, 1080p kept: ${best1080 ? "yes" : "no"}`);
-      return streams;
-    } catch (error) {
-      console.error(`[4KHDHub] Error: ${error.message}`);
-      return [];
-    }
-  });
-}
-
-module.exports = { getStreams };
+module.exports={'getStreams':_0x106,'onSettings':_0xf3};
