@@ -1,6 +1,5 @@
 // ============================================================
-// 4KHDHub Provider — Deobfuscated & Fixed
-// Matches original obfuscated behavior exactly
+// 4KHDHub Provider — Deobfuscated & Final Version
 // ============================================================
 
 const cheerio = require("cheerio-without-node-native");
@@ -180,7 +179,6 @@ function parseSize(text) {
   return m ? m[1] + " " + m[2].toUpperCase() : "N/A";
 }
 
-// نسخة الأصل: يقبل فقط هذين الدومينين (بقية الدومينات تُفلتر في extractHubCloud)
 function isDirectVideo(url) {
   try {
     const host = new URL(url).hostname.toLowerCase();
@@ -212,7 +210,7 @@ async function getMetadata(id, type) {
   };
 }
 
-// ==================== Find Page (matching original) ====================
+// ==================== Find Page ====================
 
 async function findPage(meta, isSeries, season) {
   const query =
@@ -225,7 +223,6 @@ async function findPage(meta, isSeries, season) {
   const $ = cheerio.load(html);
   let best = null;
 
-  // الأصل يستخدم "article" كحاوية، ثم .entry-title / .category / .year
   $("article").each((_, el) => {
     const $el = $(el);
     const title = $el.find(".entry-title").text().trim();
@@ -415,6 +412,12 @@ function buildStreamObject(
   }
   if (!quality || quality === "N/A") quality = parseQuality(blob);
 
+  // فلترة الجودات: فقط 4k و 1080p
+  const t = String(quality).toLowerCase();
+  const is4k = t.includes("2160") || t.includes("4k") || t.includes("uhd");
+  const is1080 = t.includes("1080") || t.includes("fhd");
+  if (!is4k && !is1080) return null;
+
   const qRank = getQualityRank(quality);
 
   let audio = "Single-Audio";
@@ -448,7 +451,9 @@ function buildStreamObject(
       ? getInvertedSortTag(sizeMB, 999999)
       : getInvertedSortTag(qRank * 100000 + sizeMB, 999999);
 
-  const name = `${sortTag}${PROVIDER_NAME} | ${quality} | ${audio}`;
+  // إضافة الحجم إلى اسم المزود
+  const name = `${sortTag}${PROVIDER_NAME} | ${quality} | ${size} | ${audio}`;
+
   const title = meta && meta.title ? meta.title : mediaTitle;
   const year = meta && meta.year ? meta.year : "N/A";
   const epTag =
@@ -541,26 +546,49 @@ async function getStreams(
     }
 
     const seen = {};
-    const out = [];
+    const allBuilt = [];
     for (const s of raw) {
       if (!isDirectVideo(s.url) || seen[s.url]) continue;
       seen[s.url] = true;
 
       const desc = `${s.title} [${s.quality}] ${s.size}`;
-      out.push(
-        buildStreamObject(
-          meta.title,
-          desc,
-          s.url,
-          s.size,
-          s.size,
-          { Referer: BASE_URL + "/", "User-Agent": USER_AGENT },
-          tag.trim(),
-          meta,
-          cfg.sortBy
-        )
+      const built = buildStreamObject(
+        meta.title,
+        desc,
+        s.url,
+        s.quality,
+        s.size,
+        { Referer: BASE_URL + "/", "User-Agent": USER_AGENT },
+        tag.trim(),
+        meta,
+        cfg.sortBy
       );
+
+      if (built) allBuilt.push(built);
     }
+
+    // فلترة 1080p: احذف الأصغر فقط إذا كان العدد 3 أو أكثر
+    const isFourK = (item) => {
+      const n = (item.data.name || "").toLowerCase();
+      return n.includes("2160") || n.includes("4k") || n.includes("uhd");
+    };
+    const is1080p = (item) => {
+      const n = (item.data.name || "").toLowerCase();
+      return n.includes("1080") || n.includes("fhd");
+    };
+
+    const fourK = allBuilt.filter(isFourK);
+    let fullHD = allBuilt.filter(is1080p);
+
+    if (fullHD.length >= 3) {
+      let smallest = fullHD[0];
+      for (const item of fullHD) {
+        if (item.sizeInMB < smallest.sizeInMB) smallest = item;
+      }
+      fullHD = fullHD.filter((item) => item !== smallest);
+    }
+
+    const out = [...fourK, ...fullHD];
 
     out.sort((a, b) => {
       if (cfg.sortBy === "largest") return b.sizeInMB - a.sizeInMB;
@@ -570,7 +598,7 @@ async function getStreams(
     });
 
     console.log(
-      `[${PROVIDER_NAME}] Returning ${out.length} stream(s) sorted by ${cfg.sortBy}`
+      `[${PROVIDER_NAME}] Returning ${out.length} stream(s) (4k untouched, 1080p keeps 1-2, drops smallest when 3+)`
     );
     return out.map((s) => s.data);
   } catch (e) {
