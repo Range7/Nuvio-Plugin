@@ -1,6 +1,6 @@
 // language: JavaScript, file: providers/4khdhub.js
 // 4KHDHub — 4khdhub.one | 4K + 1080p only | drop smallest 1080p, keep all 4K
-// fix: correct search selectors, FSL/PixelServer resolution, redirect order
+// fix: wider anchor capture + resolver hosts + episode container fallback
 
 const cheerio = require('cheerio');
 
@@ -110,7 +110,6 @@ function parseSize(input) {
   return m ? m[1] + ' ' + m[2].toUpperCase() : 'N/A';
 }
 
-// ====== FIX 1: search selectors match actual 4khdhub.one structure ======
 async function getMetadata(tmdbId, type) {
   const kind = (type === 'tv' || type === 'series') ? 'tv' : 'movie';
   const res = await fetch(TMDB_URL + '/' + kind + '/' + encodeURIComponent(tmdbId) +
@@ -155,7 +154,6 @@ async function findPage(meta, isSeries, season) {
   return best && best.score >= 0.5 ? best.url : '';
 }
 
-// ====== FIX 2: redirect order is atob -> atob -> rot13 -> atob ======
 async function decodeRedirect(url) {
   if (/hubcloud|hubdrive/i.test(url)) return url;
   try {
@@ -172,30 +170,33 @@ async function decodeRedirect(url) {
 }
 
 async function findHubCloud($el, baseUrl, $) {
+  // Scan every anchor — text OR href may carry the resolver hint
   const links = $el.find('a[href]').get();
   for (const link of links) {
     const $link = $(link);
-    const href = $link.attr('href');
-    const text = $link.text();
+    const href = $link.attr('href') || '';
+    const text = ($link.text() || '') + ' ' + ($link.attr('title') || '') + ' ' + ($link.attr('class') || '');
     if (!href) continue;
 
-    if (text.includes('HubCloud') || /hubcloud/i.test(href))
+    if (/hubcloud|hubdrive|gamerxyt|gdtot|filepress|hubcdn/i.test(href) ||
+        /hubcloud|hubdrive|gamerxyt|download\s*file/i.test(text)) {
       return decodeRedirect(absoluteUrl(href, baseUrl));
-
-    if (text.includes('HubDrive') || /hubdrive/i.test(href)) {
-      const hubUrl = await decodeRedirect(absoluteUrl(href, baseUrl));
-      try {
-        const html = await fetchText(hubUrl, baseUrl);
-        const $hub = cheerio.load(html);
-        const inner = $hub('a:contains("HubCloud")').attr('href');
-        if (inner) return absoluteUrl(inner, hubUrl);
-      } catch {}
     }
+  }
+  // Fallback: resolver hidden in onclick / data-href / data-url
+  const $all = $el.find('*').filter((i, el) => {
+    const $e = $(el);
+    const attrs = ($e.attr('onclick') || '') + ($e.attr('data-href') || '') + ($e.attr('data-url') || '');
+    return /hubcloud|hubdrive|gamerxyt/i.test(attrs);
+  });
+  if ($all.length) {
+    const raw = ($all.first().attr('onclick') || $all.first().attr('data-href') || $all.first().attr('data-url') || '');
+    const m = raw.match(/https?:\/\/[^'"\s)]+/);
+    if (m) return decodeRedirect(absoluteUrl(m[0], baseUrl));
   }
   return '';
 }
 
-// ====== FIX 3: HubCloud page gives FSL / PixelServer, not .r2.dev ======
 async function extractHubCloud(hubCloudUrl, baseMeta) {
   if (!hubCloudUrl) return [];
   try {
@@ -238,14 +239,27 @@ async function extractStreams(pageUrl, isSeries, season, episode) {
   if (isSeries && season && episode) {
     const sTag = 'S' + String(season).padStart(2, '0');
     const eTag = 'Episode-' + String(episode).padStart(2, '0');
-    $('.episode-item').each((i, el) => {
-      if (!$('.episode-title', el).text().includes(sTag)) return;
-      $('.episode-download-item', el)
-        .filter((j, item) => $(item).text().includes(eTag))
+    $('.episode-item, .episode, .season-item').each((i, el) => {
+      const $el = $(el);
+      const header = $el.find('.episode-title, .title, h3, h4').text();
+      if (!header.includes(sTag)) return;
+      $el.find('.episode-download-item, .download-item, .dl-btn, a[href]')
+        .filter((j, item) => $(item).text().includes(eTag) || $(item).attr('href'))
         .each((k, item) => items.push(item));
     });
   } else {
-    $('.download-item').each((i, el) => items.push(el));
+    const selectors = ['.download-item', '.dl-btn', '.download-links a', '#download a', '.movie-download a'];
+    for (const sel of selectors) {
+      $(sel).each((i, el) => items.push(el));
+      if (items.length) break;
+    }
+  }
+
+  if (!items.length) {
+    $('a[href]').each((i, el) => {
+      const href = $(el).attr('href') || '';
+      if (/hubcloud|hubdrive|gamerxyt|gdtot|filepress/i.test(href)) items.push(el);
+    });
   }
 
   const results = await Promise.all(items.map(async (item) => {
@@ -262,7 +276,6 @@ async function extractStreams(pageUrl, isSeries, season, episode) {
   return results.flat();
 }
 
-// ====== FIX 4: build stream object — FSL/PixelServer links are the final URLs ======
 function buildStreamObject(sourceResult, meta, episodeTag, sortBy) {
   const url = sourceResult.url;
   const baseMeta = sourceResult.meta || {};
