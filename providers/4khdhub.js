@@ -1,6 +1,7 @@
 // ============================================================
 // 4KHDHub Provider — Deobfuscated & Fixed
-// Matches original obfuscated behavior exactly
+// + Size in main title (safe)
+// + quality/size undefined guards
 // ============================================================
 
 const cheerio = require("cheerio-without-node-native");
@@ -167,7 +168,7 @@ function parseQuality(text) {
 }
 
 function getQualityRank(q) {
-  const t = String(q).toLowerCase();
+  const t = String(q || "").toLowerCase();
   if (t.includes("2160") || t.includes("4k") || t.includes("uhd")) return 4;
   if (t.includes("1080") || t.includes("fhd")) return 3;
   if (t.includes("720") || t.includes("hd")) return 2;
@@ -180,7 +181,6 @@ function parseSize(text) {
   return m ? m[1] + " " + m[2].toUpperCase() : "N/A";
 }
 
-// نسخة الأصل: يقبل فقط هذين الدومينين (بقية الدومينات تُفلتر في extractHubCloud)
 function isDirectVideo(url) {
   try {
     const host = new URL(url).hostname.toLowerCase();
@@ -212,7 +212,7 @@ async function getMetadata(id, type) {
   };
 }
 
-// ==================== Find Page (matching original) ====================
+// ==================== Find Page ====================
 
 async function findPage(meta, isSeries, season) {
   const query =
@@ -225,7 +225,6 @@ async function findPage(meta, isSeries, season) {
   const $ = cheerio.load(html);
   let best = null;
 
-  // الأصل يستخدم "article" كحاوية، ثم .entry-title / .category / .year
   $("article").each((_, el) => {
     const $el = $(el);
     const title = $el.find(".entry-title").text().trim();
@@ -324,9 +323,10 @@ async function extractHubCloud(url, meta) {
     const title =
       $("div.card-header").text().replace(/\s+/g, " ").trim() ||
       $("title").text().trim() ||
-      meta.title;
+      (meta && meta.title) ||
+      "";
     const sizeTxt = parseSize($("i.fa-file").first().text());
-    const size = sizeTxt !== "N/A" ? sizeTxt : meta.size;
+    const size = sizeTxt !== "N/A" ? sizeTxt : (meta && meta.size) || "N/A";
     const quality = parseQuality(title);
 
     const out = [];
@@ -366,19 +366,20 @@ async function extractStreams(pageUrl, isSeries, season, episode) {
   const results = await Promise.all(
     nodes.map(async (n) => {
       const text = n.text().replace(/\s+/g, " ").trim();
+      const itemTitle = n.find("a[href^='http']").text().trim() || text;
       const meta = {
-        title: n.find("a[href^='http']").text().trim() || text,
+        title: itemTitle,
         quality: parseQuality(text),
         size: parseSize(text),
       };
       const hc = await findHubCloud(n, pageUrl, $);
-      return hc ? extractHubCloud(hc, meta) : [];
+      return hc ? extractHubCloud(hc, meta) :================ [];
     })
   );
   return results.flat();
 }
 
-// ==================== Build Stream ====================
+// ==================== Build Stream ====
 
 function buildStreamObject(
   mediaTitle,
@@ -404,19 +405,24 @@ function buildStreamObject(
     .trim();
 
   const blob = (desc + " " + url).toLowerCase();
+
+  // ---- quality ----
   let quality = qualityIn;
-  const qm = blob.match(/\b(2160p|4k|1080p|720p|480p)\b/i);
-  if (qm) {
-    const q = qm[1].toLowerCase();
-    if (q === "4k" || q === "2160p") quality = "2160p";
-    else if (q === "1080p") quality = "1080p";
-    else if (q === "720p") quality = "720p";
-    else if (q === "480p") quality = "480p";
+  if (!quality || quality === "N/A") {
+    const qm = blob.match(/\b(2160p|4k|1080p|720p|480p)\b/i);
+    if (qm) {
+      const q = qm[1].toLowerCase();
+      if (q === "4k" || q === "2160p") quality = "2160p";
+      else if (q === "1080p") quality = "1080p";
+      else if (q === "720p") quality = "720p";
+      else if (q === "480p") quality = "480p";
+    }
   }
   if (!quality || quality === "N/A") quality = parseQuality(blob);
 
   const qRank = getQualityRank(quality);
 
+  // ---- audio ----
   let audio = "Single-Audio";
   if (/\b(multi|multi\-audio)\b/i.test(blob)) audio = "Multi-Audio";
   else if (
@@ -425,7 +431,8 @@ function buildStreamObject(
   )
     audio = "Dual-Audio";
 
-  let size = sizeIn && sizeIn !== "N/A" ? sizeIn : "N/A";
+  // ---- size ----
+  let size = sizeIn && sizeIn !== "N/A" ? String(sizeIn) : "N/A";
   const sm =
     desc.match(/\[\s*(\d+(?:\.\d+)?\s*[MG]B)\s*\]/i) ||
     desc.match(/(\d+(?:\.\d+)?\s*[MG]B)/i) ||
@@ -443,12 +450,13 @@ function buildStreamObject(
     }
   }
 
+  // ---- sort tag ----
   const sortTag =
     sortBy === "largest"
       ? getInvertedSortTag(sizeMB, 999999)
       : getInvertedSortTag(qRank * 100000 + sizeMB, 999999);
 
-  // ✅ التعديل: إضافة الحجم إلى العنوان الرئيسي (name) بشكل شرطي
+  // ---- ✅ الاسم الرئيسي مع الحجم ----
   const sizePart = size && size !== "N/A" ? ` | ${size}` : "";
   const name = `${sortTag}${PROVIDER_NAME} | ${quality}${sizePart} | ${audio}`;
 
@@ -546,17 +554,17 @@ async function getStreams(
     const seen = {};
     const out = [];
     for (const s of raw) {
-      if (!isDirectVideo(s.url) || seen[s.url]) continue;
+      if (!s || !s.url || !is`DirectVideo(s.url) || seen مكان[s.url]) continue;
       seen[s.url] = true;
 
-      const desc = `${s.title} [${s.quality}] ${s.size}`;
+      const desc = `${s.title || ""} [${s.quality || ""}] ${s.size || ""}`.trim();
       out.push(
         buildStreamObject(
           meta.title,
           desc,
           s.url,
-          s.quality, // ✅ مصحّح: كان s.size
-          s.size,
+          s.quality || "N/A",
+          s.size || "N/A",
           { Referer: BASE_URL + "/", "User-Agent": USER_AGENT },
           tag.trim(),
           meta,
