@@ -1,5 +1,6 @@
 // ============================================================
-// 4KHDHub Provider — Full Version with Debug Logging
+// 4KHDHub Provider — Deobfuscated & Fixed
+// Matches original obfuscated behavior exactly
 // ============================================================
 
 const cheerio = require("cheerio-without-node-native");
@@ -76,17 +77,11 @@ function onSettings() {
 // ==================== Fetch ====================
 
 async function fetchText(url, referer = BASE_URL) {
-  console.log(`[${PROVIDER_NAME}] fetchText → ${url}`);
   const res = await fetch(url, {
     headers: { ...HEADERS, Referer: referer + "/" },
   });
-  if (!res.ok) {
-    console.error(`[${PROVIDER_NAME}] fetchText FAILED status=${res.status} url=${url}`);
-    throw new Error(`HTTP ${res.status}: ${url}`);
-  }
-  const text = await res.text();
-  console.log(`[${PROVIDER_NAME}] fetchText OK chars=${text.length} url=${url}`);
-  return text;
+  if (!res.ok) throw new Error(`HTTP ${res.status}: ${url}`);
+  return res.text();
 }
 
 function absoluteUrl(u, base = BASE_URL) {
@@ -185,30 +180,14 @@ function parseSize(text) {
   return m ? m[1] + " " + m[2].toUpperCase() : "N/A";
 }
 
-// فلتر موسّع: يقبل دومينات الفيديو الشائعة + امتدادات الفيديو
+// نسخة الأصل: يقبل فقط هذين الدومينين (بقية الدومينات تُفلتر في extractHubCloud)
 function isDirectVideo(url) {
-  if (!url || typeof url !== "string") return false;
   try {
-    const u = new URL(url);
-    const host = u.hostname.toLowerCase();
-    const path = u.pathname.toLowerCase();
-
-    const directHosts = [
-      "pixeldrain.dev",
-      "pixeldrain.com",
-      "r2.cloudflarestorage.com",
-      "hubcloud",
-      "hubdrive",
-      "gofile.io",
-      "buzzheavier.com",
-      "workers.dev",
-      "backblazeb2.com",
-      "wasabisys.com",
-      "digitaloceanspaces.com",
-    ];
-    if (directHosts.some((h) => host.includes(h))) return true;
-    if (/\.(mp4|mkv|avi|mov|webm|m3u8|ts)(\?|$)/i.test(path)) return true;
-    return false;
+    const host = new URL(url).hostname.toLowerCase();
+    return (
+      host.endsWith(".pixeldrain.dev") ||
+      host.endsWith(".r2.cloudflarestorage.com")
+    );
   } catch {
     return false;
   }
@@ -218,133 +197,53 @@ function isDirectVideo(url) {
 
 async function getMetadata(id, type) {
   const kind = type === "tv" || type === "series" ? "tv" : "movie";
-  const url = `${TMDB_URL}/${kind}/${encodeURIComponent(
-    id
-  )}?api_key=${TMDB_KEY}&append_to_response=external_ids`;
-  console.log(`[${PROVIDER_NAME}] getMetadata → ${url}`);
-  const res = await fetch(url, {
-    headers: { Accept: "application/json", "User-Agent": USER_AGENT },
-  });
+  const res = await fetch(
+    `${TMDB_URL}/${kind}/${encodeURIComponent(
+      id
+    )}?api_key=${TMDB_KEY}&append_to_response=external_ids`,
+    { headers: { Accept: "application/json", "User-Agent": USER_AGENT } }
+  );
   if (!res.ok) throw new Error(`TMDB ${res.status}`);
   const data = await res.json();
   const date = kind === "tv" ? data.first_air_date : data.release_date;
-  const meta = {
+  return {
     title: kind === "tv" ? data.name : data.title,
     year: date ? Number(date.slice(0, 4)) : null,
   };
-  console.log(`[${PROVIDER_NAME}] getMetadata OK meta=`, meta);
-  return meta;
 }
 
-// ==================== Find Page ====================
+// ==================== Find Page (matching original) ====================
 
 async function findPage(meta, isSeries, season) {
   const query =
     isSeries && season
       ? meta.title + " season " + season
       : (meta.title + " " + (meta.year || "")).trim();
-
-  const searchUrl = BASE_URL + "/?s=" + encodeURIComponent(query);
-  console.log(`[${PROVIDER_NAME}] findPage → searchUrl=${searchUrl}`);
-
-  let html;
-  try {
-    html = await fetchText(searchUrl);
-  } catch (e) {
-    console.error(`[${PROVIDER_NAME}] findPage fetch FAILED:`, e.message);
-    return "";
-  }
-
+  const html = await fetchText(
+    BASE_URL + "/?s=" + encodeURIComponent(query)
+  );
   const $ = cheerio.load(html);
-
-  // محاولة عدة selectors محتملة
-  const ARTICLE_SELECTORS = [
-    "article",
-    ".post-item",
-    ".movie-item",
-    ".item",
-    ".result-item",
-    ".movies-list article",
-    ".entry-content article",
-    "div.search-result",
-    ".post",
-    ".movie",
-    ".tvshow",
-  ];
-
-  let $articles = null;
-  let usedSelector = "";
-  for (const sel of ARTICLE_SELECTORS) {
-    const found = $(sel);
-    if (found.length > 0) {
-      $articles = found;
-      usedSelector = sel;
-      console.log(
-        `[${PROVIDER_NAME}] findPage → using selector "${sel}" (${found.length} items)`
-      );
-      break;
-    }
-  }
-
-  if (!$articles || $articles.length === 0) {
-    console.error(`[${PROVIDER_NAME}] findPage → NO articles matched`);
-    // اطبع عينة من البنية عشان نعرف شكل الصفحة
-    const bodyHtml = $("body").html() || "";
-    console.log(
-      `[${PROVIDER_NAME}] findPage → body sample:`,
-      bodyHtml.slice(0, 800)
-    );
-    return "";
-  }
-
   let best = null;
-  let count = 0;
 
-  $articles.each((_, el) => {
-    count++;
+  // الأصل يستخدم "article" كحاوية، ثم .entry-title / .category / .year
+  $("article").each((_, el) => {
     const $el = $(el);
-
-    // محاولة استخراج العنوان من عدة selectors
-    const title =
-      $el.find("h2 a, h3 a, .entry-title a, .entry-title, .title a, .title, a").first().text().trim() ||
-      $el.text().trim().split("\n")[0];
-
-    const cat =
-      $el.find(".category, .cat, .post-category, .genres").text().trim();
-
-    const yearText =
-      $el.find(".year, .date, time").text() || $el.text();
-
-    // البحث عن الرابط
-    let href = $el.attr("href");
-    if (!href && $el.find("a[href]").length > 0) {
-      href = $el.find("a[href]").first().attr("href");
-    }
-
-    console.log(
-      `[${PROVIDER_NAME}] item #${count}: title="${title}" cat="${cat}" href="${href}"`
-    );
-
+    const title = $el.find(".entry-title").text().trim();
+    const cat = $el.find(".category").text().trim();
+    const yearText = $el.find(".year").text();
+    const href =
+      $el.attr("href") || $el.find("a[href]").first().attr("href");
     if (!title || !href) return;
-
-    // فلترة نوع المحتوى إذا كنا نعرف الـ cat
-    if (cat) {
-      if (isSeries && !/series|tv/i.test(cat)) return;
-      if (!isSeries && !/movie/i.test(cat)) return;
-    } else {
-      // إذا ما فيه cat، فلترة بالرابط
-      const url = absoluteUrl(href);
-      if (isSeries && !/series|tv|show/i.test(url)) {
-        // ما نرفض، بس نخفض الاحتمال
-      }
-    }
+    if (isSeries && !/series/i.test(cat)) return;
+    if (!isSeries && !/movies?/i.test(cat)) return;
 
     const ym = yearText.match(/\b(19|20)\d{2}\b/);
     const year = ym ? Number(ym[0]) : null;
 
     let score = titleScore(meta.title, title);
     if (meta.year && year === meta.year) score += 0.35;
-    else if (meta.year && year && Math.abs(year - meta.year) > 1) score -= 0.5;
+    else if (meta.year && year && Math.abs(year - meta.year) > 1)
+      score -= 0.5;
 
     if (isSeries && season) {
       const sm = title.match(/(?:season\s*|s)(\d+)/i);
@@ -352,19 +251,11 @@ async function findPage(meta, isSeries, season) {
       else if (sm) score -= 0.6;
     }
 
-    console.log(`[${PROVIDER_NAME}] score for "${title}" = ${score}`);
-
     if (!best || score > best.score)
       best = { url: absoluteUrl(href), score, title };
   });
 
-  console.log(
-    `[${PROVIDER_NAME}] findPage → items=${count}, best=`,
-    best
-  );
-
-  // عتبة أقل للقبول
-  return best && best.score >= 0.5 ? best.url : "";
+  return best && best.score >= 0.7 ? best.url : "";
 }
 
 // ==================== Redirect Decoding ====================
@@ -431,29 +322,21 @@ async function extractHubCloud(url, meta) {
 
     const $ = cheerio.load(html);
     const title =
-      $("div.card-header, h1, h2, .title").first().text().replace(/\s+/g, " ").trim() ||
+      $("div.card-header").text().replace(/\s+/g, " ").trim() ||
       $("title").text().trim() ||
       meta.title;
-    const sizeTxt = parseSize($("i.fa-file, .size, .file-size").first().text());
+    const sizeTxt = parseSize($("i.fa-file").first().text());
     const size = sizeTxt !== "N/A" ? sizeTxt : meta.size;
     const quality = parseQuality(title);
 
     const out = [];
-    const seen = new Set();
     $("a[href]").each((_, el) => {
       const href = $(el).attr("href");
-      if (!href || seen.has(href)) return;
-      if (!isDirectVideo(href)) return;
-      seen.add(href);
+      if (!href || !isDirectVideo(href)) return;
       out.push({ url: href, title, quality, size });
     });
-
-    console.log(
-      `[${PROVIDER_NAME}] extractHubCloud url=${url} → ${out.length} direct links`
-    );
     return out;
-  } catch (e) {
-    console.error(`[${PROVIDER_NAME}] extractHubCloud error:`, e.message);
+  } catch {
     return [];
   }
 }
@@ -461,7 +344,6 @@ async function extractHubCloud(url, meta) {
 // ==================== Extract Streams ====================
 
 async function extractStreams(pageUrl, isSeries, season, episode) {
-  console.log(`[${PROVIDER_NAME}] extractStreams → ${pageUrl}`);
   const html = await fetchText(pageUrl);
   const $ = cheerio.load(html);
   const nodes = [];
@@ -469,98 +351,23 @@ async function extractStreams(pageUrl, isSeries, season, episode) {
   if (isSeries && season && episode) {
     const sTag = "S" + String(season).padStart(2, "0");
     const eTag = "Episode-" + String(episode).padStart(2, "0");
-    const eNum = String(episode).padStart(2, "0");
 
-    console.log(
-      `[${PROVIDER_NAME}] searching episode tags: sTag=${sTag} eTag=${eTag}`
-    );
-
-    $(".episode-item, .season-item, .episodes li, li").each((_, el) => {
+    $(".episode-item").each((_, el) => {
       const $el = $(el);
-      const txt = $el.text();
-      if (!txt.includes(sTag) && !txt.match(new RegExp(`S0?${season}\\b`, "i")))
-        return;
-      $el.find("a[href]").each((_, a) => {
-        const t = $(a).text();
-        if (
-          t.includes(eTag) ||
-          t.match(new RegExp(`E0?${episode}\\b`, "i")) ||
-          t.includes(eNum)
-        )
-          nodes.push($(a));
+      if (!$el.find(".episode-title").text().includes(sTag)) return;
+      $el.find(".episode-download-item").each((_, d) => {
+        if ($(d).text().includes(eTag)) nodes.push($(d));
       });
     });
-
-    if (nodes.length === 0) {
-      console.log(
-        `[${PROVIDER_NAME}] no episode nodes matched, falling back to all download links`
-      );
-    }
-  }
-
-  if (nodes.length === 0) {
-    const downloadSelectors = [
-      ".download-item",
-      ".episode-download-item",
-      ".download-links a",
-      ".download-links li",
-      "#download a",
-      "#download li",
-      ".maxbutton",
-      "a.maxbutton",
-      ".btn-download",
-      ".downloads a",
-      "a[href*='hubcloud']",
-      "a[href*='hubdrive']",
-      "a[href*='pixeldrain']",
-      "a[href*='gofile']",
-      "table.downloads tr",
-      ".entry-content p a",
-      ".entry-content li",
-    ];
-
-    for (const sel of downloadSelectors) {
-      const found = $(sel);
-      if (found.length > 0) {
-        console.log(
-          `[${PROVIDER_NAME}] extractStreams → selector "${sel}" matched ${found.length}`
-        );
-        found.each((_, el) => nodes.push($(el)));
-      }
-    }
-  }
-
-  console.log(
-    `[${PROVIDER_NAME}] extractStreams → total nodes=${nodes.length}`
-  );
-
-  const uniqueNodes = [];
-  const seenText = new Set();
-  for (const n of nodes) {
-    const key = n.text().trim() + "|" + (n.attr("href") || "");
-    if (seenText.has(key)) continue;
-    seenText.add(key);
-    uniqueNodes.push(n);
+  } else {
+    $(".download-item").each((_, el) => nodes.push($(el)));
   }
 
   const results = await Promise.all(
-    uniqueNodes.map(async (n) => {
+    nodes.map(async (n) => {
       const text = n.text().replace(/\s+/g, " ").trim();
-      const href = n.attr("href") || n.find("a[href]").first().attr("href");
-      if (!href && !text) return [];
-
-      if (href && /hubcloud|hubdrive/i.test(href)) {
-        const meta = {
-          title: text || "Download",
-          quality: parseQuality(text),
-          size: parseSize(text),
-        };
-        const decoded = await decodeRedirect(absoluteUrl(href, pageUrl));
-        return extractHubCloud(decoded, meta);
-      }
-
       const meta = {
-        title: text || "Download",
+        title: n.find("a[href^='http']").text().trim() || text,
         quality: parseQuality(text),
         size: parseSize(text),
       };
@@ -608,12 +415,6 @@ function buildStreamObject(
   }
   if (!quality || quality === "N/A") quality = parseQuality(blob);
 
-  // فلترة الجودات: فقط 4k و 1080p
-  const t = String(quality).toLowerCase();
-  const is4k = t.includes("2160") || t.includes("4k") || t.includes("uhd");
-  const is1080 = t.includes("1080") || t.includes("fhd");
-  if (!is4k && !is1080) return null;
-
   const qRank = getQualityRank(quality);
 
   let audio = "Single-Audio";
@@ -647,8 +448,9 @@ function buildStreamObject(
       ? getInvertedSortTag(sizeMB, 999999)
       : getInvertedSortTag(qRank * 100000 + sizeMB, 999999);
 
-  // إضافة الحجم إلى اسم المزود
-  const name = `${sortTag}${PROVIDER_NAME} | ${quality} | ${size} | ${audio}`;
+  // ✅ التعديل: إضافة الحجم إلى العنوان الرئيسي (name) بشكل شرطي
+  const sizePart = size && size !== "N/A" ? ` | ${size}` : "";
+  const name = `${sortTag}${PROVIDER_NAME} | ${quality}${sizePart} | ${audio}`;
 
   const title = meta && meta.title ? meta.title : mediaTitle;
   const year = meta && meta.year ? meta.year : "N/A";
@@ -725,21 +527,14 @@ async function getStreams(
   try {
     const cfg = resolveSettings(settings);
     console.log(
-      `[${PROVIDER_NAME}] === getStreams START === tmdbId=${tmdbId} type=${type} S=${season} E=${episode}`
+      `[${PROVIDER_NAME}] Searching: ${tmdbId} type=${type} S=${season} E=${episode} sort=${cfg.sortBy}`
     );
 
     const meta = await getMetadata(tmdbId, type);
-    console.log(`[${PROVIDER_NAME}] meta:`, meta);
-
     const page = await findPage(meta, isSeries, season);
-    console.log(`[${PROVIDER_NAME}] page URL:`, page);
-    if (!page) {
-      console.log(`[${PROVIDER_NAME}] === getStreams END: no page ===`);
-      return [];
-    }
+    if (!page) return [];
 
     const raw = await extractStreams(page, isSeries, season, episode);
-    console.log(`[${PROVIDER_NAME}] raw streams: ${raw.length}`);
 
     let tag = "";
     if (isSeries) {
@@ -749,54 +544,26 @@ async function getStreams(
     }
 
     const seen = {};
-    const allBuilt = [];
+    const out = [];
     for (const s of raw) {
       if (!isDirectVideo(s.url) || seen[s.url]) continue;
       seen[s.url] = true;
 
       const desc = `${s.title} [${s.quality}] ${s.size}`;
-      const built = buildStreamObject(
-        meta.title,
-        desc,
-        s.url,
-        s.quality,
-        s.size,
-        { Referer: BASE_URL + "/", "User-Agent": USER_AGENT },
-        tag.trim(),
-        meta,
-        cfg.sortBy
+      out.push(
+        buildStreamObject(
+          meta.title,
+          desc,
+          s.url,
+          s.quality, // ✅ مصحّح: كان s.size
+          s.size,
+          { Referer: BASE_URL + "/", "User-Agent": USER_AGENT },
+          tag.trim(),
+          meta,
+          cfg.sortBy
+        )
       );
-
-      if (built) allBuilt.push(built);
     }
-
-    console.log(`[${PROVIDER_NAME}] allBuilt (after quality filter): ${allBuilt.length}`);
-
-    // فلترة 1080p: احذف الأصغر فقط إذا كان العدد 3 أو أكثر
-    const isFourK = (item) => {
-      const n = (item.data.name || "").toLowerCase();
-      return n.includes("2160") || n.includes("4k") || n.includes("uhd");
-    };
-    const is1080p = (item) => {
-      const n = (item.data.name || "").toLowerCase();
-      return n.includes("1080") || n.includes("fhd");
-    };
-
-    const fourK = allBuilt.filter(isFourK);
-    let fullHD = allBuilt.filter(is1080p);
-
-    console.log(`[${PROVIDER_NAME}] 4k count: ${fourK.length}, 1080p count: ${fullHD.length}`);
-
-    if (fullHD.length >= 3) {
-      let smallest = fullHD[0];
-      for (const item of fullHD) {
-        if (item.sizeInMB < smallest.sizeInMB) smallest = item;
-      }
-      console.log(`[${PROVIDER_NAME}] dropping smallest 1080p: ${smallest.data.name}`);
-      fullHD = fullHD.filter((item) => item !== smallest);
-    }
-
-    const out = [...fourK, ...fullHD];
 
     out.sort((a, b) => {
       if (cfg.sortBy === "largest") return b.sizeInMB - a.sizeInMB;
@@ -806,12 +573,11 @@ async function getStreams(
     });
 
     console.log(
-      `[${PROVIDER_NAME}] === getStreams END: ${out.length} streams ===`
+      `[${PROVIDER_NAME}] Returning ${out.length} stream(s) sorted by ${cfg.sortBy}`
     );
     return out.map((s) => s.data);
   } catch (e) {
-    console.error(`[${PROVIDER_NAME}] FATAL: ${e.message}`);
-    console.error(e.stack);
+    console.error(`[${PROVIDER_NAME}] Error: ${e.message}`);
     return [];
   }
 }
