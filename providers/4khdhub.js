@@ -1,8 +1,3 @@
-// ============================================================
-// 4KHDHub Provider — Deobfuscated & Fixed
-// Matches original obfuscated behavior exactly
-// ============================================================
-
 const cheerio = require("cheerio-without-node-native");
 
 const PROVIDER_NAME = "4KHDHub";
@@ -16,8 +11,6 @@ const HEADERS = {
   "User-Agent": USER_AGENT,
   Referer: BASE_URL + "/",
 };
-
-// ==================== Settings ====================
 
 function getInvertedSortTag(num, max = 999999) {
   const n = Math.max(0, parseInt(num, 10) || 0);
@@ -48,12 +41,12 @@ function resolveSettings(settings) {
       if (typeof raw === "object" && raw !== null)
         raw = raw.value || raw.name || "";
       const val = String(raw).toLowerCase();
-      if (val.includes("largest") || val.includes("size"))
+      if (val.indexOf("largest") >= 0 || val.indexOf("size") >= 0)
         result.sortBy = "largest";
       else result.sortBy = "quality";
     }
   } catch (e) {
-    console.error(`[${PROVIDER_NAME}] settings error`, e);
+    console.error("[" + PROVIDER_NAME + "] settings error", e);
   }
   return result;
 }
@@ -74,13 +67,11 @@ function onSettings() {
   ];
 }
 
-// ==================== Fetch ====================
-
 async function fetchText(url, referer = BASE_URL) {
   const res = await fetch(url, {
-    headers: { ...HEADERS, Referer: referer + "/" },
+    headers: Object.assign({}, HEADERS, { Referer: referer + "/" }),
   });
-  if (!res.ok) throw new Error(`HTTP ${res.status}: ${url}`);
+  if (!res.ok) throw new Error("HTTP " + res.status + ": " + url);
   return res.text();
 }
 
@@ -93,8 +84,6 @@ function absoluteUrl(u, base = BASE_URL) {
     return "";
   }
 }
-
-// ==================== Decoders ====================
 
 function decodeBase64(s) {
   const chars =
@@ -138,8 +127,6 @@ function decodeEntities(s) {
     .replace(/&#(\d+);/g, (_, d) => String.fromCharCode(d));
 }
 
-// ==================== Title / Size / Quality ====================
-
 function normalizeTitle(t) {
   return String(t || "")
     .toLowerCase()
@@ -168,10 +155,11 @@ function parseQuality(text) {
 
 function getQualityRank(q) {
   const t = String(q).toLowerCase();
-  if (t.includes("2160") || t.includes("4k") || t.includes("uhd")) return 4;
-  if (t.includes("1080") || t.includes("fhd")) return 3;
-  if (t.includes("720") || t.includes("hd")) return 2;
-  if (t.includes("480") || t.includes("sd")) return 1;
+  if (t.indexOf("2160") >= 0 || t.indexOf("4k") >= 0 || t.indexOf("uhd") >= 0)
+    return 4;
+  if (t.indexOf("1080") >= 0 || t.indexOf("fhd") >= 0) return 3;
+  if (t.indexOf("720") >= 0 || t.indexOf("hd") >= 0) return 2;
+  if (t.indexOf("480") >= 0 || t.indexOf("sd") >= 0) return 1;
   return 0;
 }
 
@@ -180,7 +168,6 @@ function parseSize(text) {
   return m ? m[1] + " " + m[2].toUpperCase() : "N/A";
 }
 
-// نسخة الأصل: يقبل فقط هذين الدومينين (بقية الدومينات تُفلتر في extractHubCloud)
 function isDirectVideo(url) {
   try {
     const host = new URL(url).hostname.toLowerCase();
@@ -193,17 +180,20 @@ function isDirectVideo(url) {
   }
 }
 
-// ==================== TMDB ====================
-
 async function getMetadata(id, type) {
   const kind = type === "tv" || type === "series" ? "tv" : "movie";
   const res = await fetch(
-    `${TMDB_URL}/${kind}/${encodeURIComponent(
-      id
-    )}?api_key=${TMDB_KEY}&append_to_response=external_ids`,
+    TMDB_URL +
+      "/" +
+      kind +
+      "/" +
+      encodeURIComponent(id) +
+      "?api_key=" +
+      TMDB_KEY +
+      "&append_to_response=external_ids",
     { headers: { Accept: "application/json", "User-Agent": USER_AGENT } }
   );
-  if (!res.ok) throw new Error(`TMDB ${res.status}`);
+  if (!res.ok) throw new Error("TMDB " + res.status);
   const data = await res.json();
   const date = kind === "tv" ? data.first_air_date : data.release_date;
   return {
@@ -212,27 +202,21 @@ async function getMetadata(id, type) {
   };
 }
 
-// ==================== Find Page (matching original) ====================
-
 async function findPage(meta, isSeries, season) {
   const query =
     isSeries && season
       ? meta.title + " season " + season
       : (meta.title + " " + (meta.year || "")).trim();
-  const html = await fetchText(
-    BASE_URL + "/?s=" + encodeURIComponent(query)
-  );
+  const html = await fetchText(BASE_URL + "/?s=" + encodeURIComponent(query));
   const $ = cheerio.load(html);
   let best = null;
 
-  // الأصل يستخدم "article" كحاوية، ثم .entry-title / .category / .year
   $("article").each((_, el) => {
     const $el = $(el);
     const title = $el.find(".entry-title").text().trim();
     const cat = $el.find(".category").text().trim();
     const yearText = $el.find(".year").text();
-    const href =
-      $el.attr("href") || $el.find("a[href]").first().attr("href");
+    const href = $el.attr("href") || $el.find("a[href]").first().attr("href");
     if (!title || !href) return;
     if (isSeries && !/series/i.test(cat)) return;
     if (!isSeries && !/movies?/i.test(cat)) return;
@@ -242,8 +226,7 @@ async function findPage(meta, isSeries, season) {
 
     let score = titleScore(meta.title, title);
     if (meta.year && year === meta.year) score += 0.35;
-    else if (meta.year && year && Math.abs(year - meta.year) > 1)
-      score -= 0.5;
+    else if (meta.year && year && Math.abs(year - meta.year) > 1) score -= 0.5;
 
     if (isSeries && season) {
       const sm = title.match(/(?:season\s*|s)(\d+)/i);
@@ -258,15 +241,15 @@ async function findPage(meta, isSeries, season) {
   return best && best.score >= 0.7 ? best.url : "";
 }
 
-// ==================== Redirect Decoding ====================
-
 async function decodeRedirect(url) {
   if (/hubcloud|hubdrive/i.test(url)) return url;
   try {
     const html = await fetchText(url);
-    const m = html.match(/['"]o['"]\s*,\s*['"]([^'"]+)['"]/)?.[1];
-    if (!m) return url;
-    const decoded = decodeBase64(rot13(decodeBase64(decodeBase64(m))));
+    const m1 = html.match(/['"]o['"]\s*,\s*['"]([^'"]+)['"]/);
+    const m2 = html.match(/'o','([^']+)'/);
+    const val = (m1 && m1[1]) || (m2 && m2[1]);
+    if (!val) return url;
+    const decoded = decodeBase64(rot13(decodeBase64(decodeBase64(val))));
     const parsed = JSON.parse(decoded);
     return parsed.o ? decodeBase64(parsed.o).trim() : url;
   } catch {
@@ -306,14 +289,13 @@ async function findHubCloud($, referer, $ctx) {
   return "";
 }
 
-// ==================== HubCloud Extract ====================
-
 async function extractHubCloud(url, meta) {
   try {
     let html = await fetchText(url, url);
     let base = url;
 
-    const redirect = html.match(/var url\s*=\s*['"]([^'"]+)['"]/)?.[1];
+    const rmatch = html.match(/var url\s*=\s*['"]([^'"]+)['"]/);
+    const redirect = rmatch ? rmatch[1] : null;
     const btn = redirect || cheerio.load(html)("a.btn").attr("href");
     if (btn) {
       base = absoluteUrl(btn, url);
@@ -333,15 +315,13 @@ async function extractHubCloud(url, meta) {
     $("a[href]").each((_, el) => {
       const href = $(el).attr("href");
       if (!href || !isDirectVideo(href)) return;
-      out.push({ url: href, title, quality, size });
+      out.push({ url: href, title: title, quality: quality, size: size });
     });
     return out;
   } catch {
     return [];
   }
 }
-
-// ==================== Extract Streams ====================
 
 async function extractStreams(pageUrl, isSeries, season, episode) {
   const html = await fetchText(pageUrl);
@@ -377,8 +357,6 @@ async function extractStreams(pageUrl, isSeries, season, episode) {
   );
   return results.flat();
 }
-
-// ==================== Build Stream ====================
 
 function buildStreamObject(
   mediaTitle,
@@ -421,7 +399,7 @@ function buildStreamObject(
   if (/\b(multi|multi\-audio)\b/i.test(blob)) audio = "Multi-Audio";
   else if (
     /\b(dual|dual\-audio|dubbed|hindi)\b/i.test(blob) ||
-    decodeEntities(mediaTitle || "").toLowerCase().includes("dual")
+    decodeEntities(mediaTitle || "").toLowerCase().includes("hindi")
   )
     audio = "Dual-Audio";
 
@@ -448,20 +426,31 @@ function buildStreamObject(
       ? getInvertedSortTag(sizeMB, 999999)
       : getInvertedSortTag(qRank * 100000 + sizeMB, 999999);
 
-  const name = `${sortTag}${PROVIDER_NAME} | ${quality} | ${audio}`;
+  const name =
+    sortTag + PROVIDER_NAME + " | " + quality + " | " + audio;
+
   const title = meta && meta.title ? meta.title : mediaTitle;
   const year = meta && meta.year ? meta.year : "N/A";
   const epTag =
     seasonTag && (seasonTag.startsWith("S") || seasonTag.includes("E"))
-      ? `🎬 ${title} - (${year}) ${seasonTag
-          .replace(/E0*(\d+)/i, "$1")
-          .replace(/S0*(\d+)/i, "$2")}`
-      : `🎬 ${title} (${year})`;
+      ? "\uD83C\uDFAC " +
+        title +
+        " - (" +
+        year +
+        ") " +
+        seasonTag.replace(/E0*(\d+)/i, "$1").replace(/S0*(\d+)/i, "$2")
+      : "\uD83C\uDFAC " + title + " (" + year + ")";
 
-  const qIcon = quality === "2160p" ? "⚡" : quality === "720p" ? "💎" : "🔥";
+  const qIcon =
+    quality === "2160p"
+      ? "\u26A1"
+      : quality === "720p"
+      ? "\uD83D\uDC8E"
+      : "\uD83D\uDD25";
   const ext =
     /\.mp4($|\?)/i.test(url) || /\.mp4\b/i.test(desc) ? "MP4" : "MKV";
-  const line1 = `${qIcon} ${quality} | ${size} | 📼 ${ext}`;
+  const line1 =
+    qIcon + " " + quality + " | " + size + " | \uD83D\uDCFC " + ext;
 
   const hdr = /\bhdr10\+/i.test(blob)
     ? "HDR10+"
@@ -469,12 +458,12 @@ function buildStreamObject(
     ? "HDR10"
     : "HDR";
   const codec = /\b(h\.?265|x265|hevc)\b/i.test(blob) ? "H.265" : "H.264";
-  const tags = [`🌈 ${hdr}`, `🎞️ ${codec}`];
+  const tags = ["\uD83C\uDF08 " + hdr, "\uD83C\uDF9E\uFE0F " + codec];
   if (
     /\b(dolby\s*vision|dovi|\.dv\.)\b/i.test(blob) ||
     /[\.\-_]dv[\.\-_]/i.test(blob)
   )
-    tags.push("👁️ DV");
+    tags.push("\uD83D\uDC41\uFE0F DV");
   const line2 = tags.join(" | ");
 
   const audioCodec = /\btruehd\s*7\.1\b/i.test(blob)
@@ -483,10 +472,11 @@ function buildStreamObject(
     ? "DDP5.1"
     : "DD5.1";
   const atmos = /\batmos\b/i.test(blob) ? " Atmos" : "";
-  const line3 = `🎧 ${audio} | 🎧 ${audioCodec}${atmos}`;
+  const line3 =
+    "\uD83C\uDFA7 " + audio + " | \uD83C\uDFA7 " + audioCodec + atmos;
 
   const src = /\b(bluray|blu\-ray)\b/i.test(blob) ? "BluRay" : "WEB-DL";
-  const line4 = `📡 ${src}`;
+  const line4 = "\uD83D\uDCF1 " + src;
 
   const fullTitle = [epTag, line1, line2, line3, line4].join("\n");
 
@@ -494,7 +484,7 @@ function buildStreamObject(
     qualityRank: qRank,
     sizeInMB: sizeMB,
     data: {
-      name,
+      name: name,
       title: fullTitle,
       size: fullTitle,
       description: fullTitle,
@@ -509,8 +499,6 @@ function buildStreamObject(
   };
 }
 
-// ==================== Public Entrypoint ====================
-
 async function getStreams(
   tmdbId,
   type,
@@ -524,7 +512,18 @@ async function getStreams(
   try {
     const cfg = resolveSettings(settings);
     console.log(
-      `[${PROVIDER_NAME}] Searching: ${tmdbId} type=${type} S=${season} E=${episode} sort=${cfg.sortBy}`
+      "[" +
+        PROVIDER_NAME +
+        "] Searching: " +
+        tmdbId +
+        " type=" +
+        type +
+        " S=" +
+        season +
+        " E=" +
+        episode +
+        " sort=" +
+        cfg.sortBy
     );
 
     const meta = await getMetadata(tmdbId, type);
@@ -537,7 +536,7 @@ async function getStreams(
     if (isSeries) {
       const s = parseInt(season, 10) || 1;
       const e = parseInt(episode, 10) || 1;
-      tag = `S${s < 10 ? "0" : ""}${s}E${e < 10 ? "0" : ""}${e}`;
+      tag = "S" + (s < 10 ? "0" : "") + s + "E" + (e < 10 ? "0" : "") + e;
     }
 
     const seen = {};
@@ -546,13 +545,13 @@ async function getStreams(
       if (!isDirectVideo(s.url) || seen[s.url]) continue;
       seen[s.url] = true;
 
-      const desc = `${s.title} [${s.quality}] ${s.size}`;
+      const desc = s.title + " [" + s.quality + "] " + s.size;
       out.push(
         buildStreamObject(
           meta.title,
           desc,
           s.url,
-          s.size,
+          s.quality,
           s.size,
           { Referer: BASE_URL + "/", "User-Agent": USER_AGENT },
           tag.trim(),
@@ -570,13 +569,18 @@ async function getStreams(
     });
 
     console.log(
-      `[${PROVIDER_NAME}] Returning ${out.length} stream(s) sorted by ${cfg.sortBy}`
+      "[" +
+        PROVIDER_NAME +
+        "] Returning " +
+        out.length +
+        " stream(s) sorted by " +
+        cfg.sortBy
     );
     return out.map((s) => s.data);
   } catch (e) {
-    console.error(`[${PROVIDER_NAME}] Error: ${e.message}`);
+    console.error("[" + PROVIDER_NAME + "] Error: " + e.message);
     return [];
   }
 }
 
-module.exports = { getStreams, onSettings };
+module.exports = { getStreams: getStreams, onSettings: onSettings };
