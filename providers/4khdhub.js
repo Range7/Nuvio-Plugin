@@ -258,8 +258,8 @@ async function decodeRedirect(url) {
   }
 }
 
-async function findHubCloud($, referer, $ctx) {
-  const links = $("a[href]").get();
+async function findHubCloud($node, referer, $ctx) {
+  const links = $node.find("a[href]").get();
   for (const el of links) {
     const $a = $ctx(el);
     const href = $a.attr("href");
