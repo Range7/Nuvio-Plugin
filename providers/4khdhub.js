@@ -1,4 +1,5 @@
-const cheerio = require("cheerio-without-node-native");
+const _cheerio_import = require("cheerio-without-node-native");
+const cheerio = _cheerio_import.default || _cheerio_import;
 
 const PROVIDER_NAME = "4KHDHub";
 const BASE_URL = "https://4khdhub.one";
