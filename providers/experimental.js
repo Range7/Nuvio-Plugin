@@ -288,7 +288,8 @@ function finalizeStreams(streams, settings) {
         var fullText = (s.name || "") + "\n" + (s.description || "") + "\n" +
             (bh.bingeGroup || "") + "\n" + (bh.filename || "") + "\n" + url;
 
-        if (!/experimental/i.test(fullText)) continue;
+        // ✅ ACCEPTS BOTH "arctic" (new) AND "experimental" (old)
+        if (!/arctic|experimental/i.test(fullText)) continue;
 
         var q = classifyQuality(s);
         if (!q) continue;
